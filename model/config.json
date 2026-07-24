@@ -1,0 +1,12 @@
+{
+    "max_length": 20,
+    "embedding_dim": 64,
+    "hidden_dim": 64,
+    "clases": [
+        "buscar_medicamento",
+        "consultar_agotados",
+        "consultar_bajo_stock",
+        "consultar_caducidades",
+        "saludo"
+    ]
+}

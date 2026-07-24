@@ -1,0 +1,54 @@
+{
+  "intents": [
+    {
+      "tag": "saludo",
+      "patterns": [
+        "Hola",
+        "Buenos días",
+        "Buenas tardes",
+        "Qué tal",
+        "Hola asistente"
+      ]
+    },
+    {
+      "tag": "consultar_bajo_stock",
+      "patterns": [
+        "Qué medicamentos tienen poco stock",
+        "Muéstrame los productos con bajo inventario",
+        "Cuáles medicamentos se están terminando",
+        "Productos con existencia baja",
+        "Medicamentos con pocas unidades"
+      ]
+    },
+    {
+      "tag": "consultar_agotados",
+      "patterns": [
+        "Qué medicamentos están agotados",
+        "Muéstrame productos sin existencia",
+        "Cuáles tienen stock cero",
+        "Medicamentos agotados",
+        "Productos sin unidades"
+      ]
+    },
+    {
+      "tag": "consultar_caducidades",
+      "patterns": [
+        "Qué medicamentos están por caducar",
+        "Muéstrame próximas caducidades",
+        "Productos que vencen pronto",
+        "Medicamentos próximos a vencer",
+        "Qué productos caducan este mes"
+      ]
+    },
+    {
+      "tag": "buscar_medicamento",
+      "patterns": [
+        "Busca paracetamol",
+        "Encuentra un medicamento",
+        "Quiero consultar un producto",
+        "Muéstrame información de un medicamento",
+        "Buscar medicamento por nombre"
+      ]
+    }
+  ]
+}
