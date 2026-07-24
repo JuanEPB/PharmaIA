@@ -8,13 +8,19 @@ from typing import Any
 
 class ConversationMemory:
     """
-    Memoria conversacional temporal almacenada en memoria RAM.
+    Memoria conversacional temporal almacenada en RAM.
 
-    Cada sesión puede conservar:
-    - Último medicamento consultado.
-    - Última intención detectada.
-    - Última respuesta.
-    - Datos adicionales de contexto.
+    La memoria se identifica mediante sesion_id y conserva:
+    - último medicamento consultado;
+    - última intención;
+    - último mensaje;
+    - última respuesta;
+    - fecha de actualización.
+
+    Esta implementación es adecuada para desarrollo y pruebas.
+
+    Para producción se recomienda sustituirla por Redis o una base
+    de datos persistente.
     """
 
     def __init__(self, expiration_minutes: int = 60) -> None:
@@ -22,71 +28,88 @@ class ConversationMemory:
         self._expiration = timedelta(minutes=expiration_minutes)
         self._lock = RLock()
 
-    def _now(self) -> datetime:
+    @staticmethod
+    def _normalize_session_id(session_id: str) -> str:
+        return str(session_id or "").strip()
+
+    @staticmethod
+    def _now() -> datetime:
         return datetime.now()
 
     def _is_expired(self, session: dict[str, Any]) -> bool:
-        updated_at = session.get("updated_at")
+        updated_at = session.get("_updated_at")
 
         if not isinstance(updated_at, datetime):
             return True
 
         return self._now() - updated_at > self._expiration
 
-    def _clean_expired_sessions(self) -> None:
-        expired_ids = [
+    def _remove_expired_sessions(self) -> None:
+        expired_session_ids = [
             session_id
             for session_id, session in self._sessions.items()
             if self._is_expired(session)
         ]
 
-        for session_id in expired_ids:
+        for session_id in expired_session_ids:
             self._sessions.pop(session_id, None)
 
     def get(self, session_id: str) -> dict[str, Any]:
-        normalized_id = str(session_id or "").strip()
+        normalized_id = self._normalize_session_id(session_id)
 
         if not normalized_id:
             return {}
 
         with self._lock:
-            self._clean_expired_sessions()
+            self._remove_expired_sessions()
 
             session = self._sessions.get(normalized_id)
 
             if not session:
                 return {}
 
-            return deepcopy(
-                {
-                    key: value
-                    for key, value in session.items()
-                    if key != "updated_at"
-                }
-            )
+            public_session = {
+                key: value
+                for key, value in session.items()
+                if not key.startswith("_")
+            }
 
-    def update(self, session_id: str, **values: Any) -> dict[str, Any]:
-        normalized_id = str(session_id or "").strip()
+            return deepcopy(public_session)
+
+    def update(
+        self,
+        session_id: str,
+        **values: Any,
+    ) -> dict[str, Any]:
+        normalized_id = self._normalize_session_id(session_id)
 
         if not normalized_id:
-            raise ValueError("El identificador de sesión es obligatorio.")
+            raise ValueError(
+                "El identificador de sesión no puede estar vacío."
+            )
 
         with self._lock:
-            self._clean_expired_sessions()
+            self._remove_expired_sessions()
 
-            current = self._sessions.get(normalized_id, {})
+            session = self._sessions.get(normalized_id, {})
 
             for key, value in values.items():
                 if value is not None:
-                    current[key] = value
+                    session[key] = value
 
-            current["updated_at"] = self._now()
-            self._sessions[normalized_id] = current
+            session["_updated_at"] = self._now()
+            self._sessions[normalized_id] = session
 
-            return self.get(normalized_id)
+            public_session = {
+                key: value
+                for key, value in session.items()
+                if not key.startswith("_")
+            }
+
+            return deepcopy(public_session)
 
     def delete(self, session_id: str) -> bool:
-        normalized_id = str(session_id or "").strip()
+        normalized_id = self._normalize_session_id(session_id)
 
         if not normalized_id:
             return False
@@ -100,8 +123,10 @@ class ConversationMemory:
 
     def count(self) -> int:
         with self._lock:
-            self._clean_expired_sessions()
+            self._remove_expired_sessions()
             return len(self._sessions)
 
 
-conversation_memory = ConversationMemory(expiration_minutes=60)
+conversation_memory = ConversationMemory(
+    expiration_minutes=60,
+)

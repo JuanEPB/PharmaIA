@@ -5,120 +5,147 @@ import re
 import unicodedata
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any
+from typing import Any, Callable
 
 from app.services.conversation_memory import conversation_memory
 
 
 class ConversationService:
     """
-    Orquestador de conversaciones con memoria temporal.
+    Integra el AssistantService existente con memoria conversacional.
 
-    Este servicio intenta reutilizar el AssistantService existente sin
-    depender de un nombre único para su método principal.
+    El servicio no reemplaza la lógica actual de inteligencia artificial.
+    Únicamente agrega contexto a las preguntas de seguimiento.
     """
 
-    FOLLOW_UP_PATTERNS = {
+    FOLLOW_UP_PATTERNS: dict[str, tuple[str, ...]] = {
         "stock": (
             "cuanto stock",
-            "cuánto stock",
-            "que stock",
-            "qué stock",
+            "que stock tiene",
+            "cuantos quedan",
+            "cuantas quedan",
+            "cuantas unidades",
             "existencia",
             "existencias",
-            "cuantos quedan",
-            "cuántos quedan",
-            "cuantas unidades",
-            "cuántas unidades",
+            "disponibles",
+            "hay disponibles",
         ),
         "caducidad": (
             "cuando caduca",
-            "cuándo caduca",
+            "cuando vence",
             "fecha de caducidad",
             "caducidad",
-            "cuando vence",
-            "cuándo vence",
+            "vencimiento",
             "esta caducado",
-            "está caducado",
             "esta vencido",
-            "está vencido",
         ),
         "precio": (
             "cuanto cuesta",
-            "cuánto cuesta",
+            "que precio tiene",
+            "cual es su precio",
             "precio",
-            "que precio",
-            "qué precio",
             "costo",
         ),
         "proveedor": (
             "quien lo provee",
-            "quién lo provee",
+            "quien la provee",
+            "quien es el proveedor",
+            "cual es el proveedor",
             "proveedor",
-            "quien es su proveedor",
-            "quién es su proveedor",
             "de quien viene",
-            "de quién viene",
         ),
         "categoria": (
-            "categoria",
-            "categoría",
             "de que categoria",
-            "de qué categoría",
-            "a que categoria",
-            "a qué categoría",
+            "cual es su categoria",
+            "categoria",
+            "tipo de medicamento",
         ),
         "lote": (
-            "lote",
-            "cual es su lote",
-            "cuál es su lote",
+            "cual es el lote",
             "numero de lote",
-            "número de lote",
+            "que lote tiene",
+            "lote",
         ),
         "detalle": (
             "dame los detalles",
             "muestra los detalles",
             "informacion completa",
-            "información completa",
             "dime todo",
-            "más información",
             "mas informacion",
+            "todos sus datos",
         ),
     }
 
+    REFERENCE_WORDS = (
+        "lo",
+        "la",
+        "el",
+        "ese",
+        "esa",
+        "este",
+        "esta",
+        "su",
+        "del mismo",
+        "de ese",
+        "de esa",
+        "y cuanto",
+        "y cuando",
+        "y quien",
+        "y cual",
+        "y el",
+        "y la",
+    )
+
     MEDICINE_KEYS = (
         "medicamento",
-        "medicine",
+        "nombre_medicamento",
         "producto",
         "nombre",
+        "medicine",
         "name",
     )
 
-    def __init__(self) -> None:
-        self.assistant = self._build_assistant()
+    ASSISTANT_METHOD_NAMES = (
+        "procesar_consulta",
+        "procesar_mensaje",
+        "procesar",
+        "responder",
+        "chat",
+        "process_message",
+        "process",
+        "handle_message",
+        "handle",
+    )
 
-    def _build_assistant(self) -> Any:
+    def __init__(self) -> None:
+        self.assistant = self._create_assistant()
+
+    @staticmethod
+    def _create_assistant() -> Any:
         try:
             from app.services.assistant_service import AssistantService
 
             return AssistantService()
+
         except Exception as exc:
             raise RuntimeError(
-                f"No fue posible inicializar AssistantService: {exc}"
+                "No fue posible inicializar AssistantService. "
+                f"Detalle: {exc}"
             ) from exc
 
     @staticmethod
-    def _normalize(value: Any) -> str:
+    def normalize(value: Any) -> str:
         text = str(value or "").strip().lower()
-        text = unicodedata.normalize("NFD", text)
+        normalized = unicodedata.normalize("NFD", text)
+
         return "".join(
             character
-            for character in text
+            for character in normalized
             if unicodedata.category(character) != "Mn"
         )
 
-    @staticmethod
-    def _serialize(value: Any) -> Any:
+    @classmethod
+    def serialize(cls, value: Any) -> Any:
         if isinstance(value, (date, datetime)):
             return value.isoformat()
 
@@ -127,110 +154,20 @@ class ConversationService:
 
         if isinstance(value, dict):
             return {
-                key: ConversationService._serialize(item)
+                str(key): cls.serialize(item)
                 for key, item in value.items()
             }
 
         if isinstance(value, (list, tuple, set)):
             return [
-                ConversationService._serialize(item)
+                cls.serialize(item)
                 for item in value
             ]
 
         return value
 
-    def _detect_follow_up(self, message: str) -> str | None:
-        normalized = self._normalize(message)
-
-        for intent, patterns in self.FOLLOW_UP_PATTERNS.items():
-            if any(self._normalize(pattern) in normalized for pattern in patterns):
-                return intent
-
-        return None
-
-    def _looks_like_follow_up(self, message: str) -> bool:
-        normalized = self._normalize(message)
-
-        references = (
-            "lo ",
-            "la ",
-            "su ",
-            "ese ",
-            "esa ",
-            "este ",
-            "esta ",
-            "el medicamento",
-            "y cuanto",
-            "y cuando",
-            "y quien",
-            "y cual",
-            "y qué",
-            "y que",
-        )
-
-        return (
-            self._detect_follow_up(message) is not None
-            or normalized.startswith(references)
-        )
-
-    def _extract_medicine_from_value(self, value: Any) -> str | None:
-        if isinstance(value, dict):
-            for key in self.MEDICINE_KEYS:
-                candidate = value.get(key)
-
-                if isinstance(candidate, str) and candidate.strip():
-                    return candidate.strip()
-
-            for nested_value in value.values():
-                result = self._extract_medicine_from_value(nested_value)
-
-                if result:
-                    return result
-
-        if isinstance(value, list):
-            for item in value:
-                result = self._extract_medicine_from_value(item)
-
-                if result:
-                    return result
-
-        return None
-
-    def _extract_medicine_from_response(self, response: Any) -> str | None:
-        result = self._extract_medicine_from_value(response)
-
-        if result:
-            return result
-
-        if isinstance(response, str):
-            patterns = (
-                r"medicamento\s*[:\-]\s*([A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .\-]+)",
-                r"producto\s*[:\-]\s*([A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .\-]+)",
-            )
-
-            for pattern in patterns:
-                match = re.search(pattern, response, flags=re.IGNORECASE)
-
-                if match:
-                    candidate = match.group(1).strip(" .,-")
-
-                    if candidate:
-                        return candidate
-
-        return None
-
-    def _find_callable(self) -> Any:
-        method_names = (
-            "procesar_consulta",
-            "procesar_mensaje",
-            "responder",
-            "chat",
-            "process",
-            "process_message",
-            "handle_message",
-        )
-
-        for method_name in method_names:
+    def _find_assistant_method(self) -> Callable[..., Any]:
+        for method_name in self.ASSISTANT_METHOD_NAMES:
             method = getattr(self.assistant, method_name, None)
 
             if callable(method):
@@ -240,13 +177,14 @@ class ConversationService:
             return self.assistant
 
         raise RuntimeError(
-            "AssistantService no contiene un método compatible. "
-            "Se esperaba procesar_consulta(), procesar_mensaje(), "
-            "responder(), chat() o process()."
+            "AssistantService no tiene un método principal compatible. "
+            "Se esperaba uno de estos métodos: "
+            + ", ".join(self.ASSISTANT_METHOD_NAMES)
         )
 
-    async def _call_assistant(self, message: str) -> Any:
-        method = self._find_callable()
+    async def _execute_assistant(self, message: str) -> Any:
+        method = self._find_assistant_method()
+
         result = method(message)
 
         if inspect.isawaitable(result):
@@ -254,82 +192,259 @@ class ConversationService:
 
         return result
 
-    async def _answer_follow_up(
+    def _detect_follow_up_intent(
         self,
         message: str,
-        medicine: str,
-        follow_up_intent: str,
-    ) -> Any:
-        prompts = {
-            "stock": f"¿Cuánto stock tiene el medicamento {medicine}?",
-            "caducidad": f"¿Cuándo caduca el medicamento {medicine}?",
-            "precio": f"¿Cuál es el precio del medicamento {medicine}?",
-            "proveedor": f"¿Quién es el proveedor del medicamento {medicine}?",
-            "categoria": f"¿Cuál es la categoría del medicamento {medicine}?",
-            "lote": f"¿Cuál es el lote del medicamento {medicine}?",
-            "detalle": f"Muéstrame toda la información del medicamento {medicine}.",
-        }
+    ) -> str | None:
+        normalized_message = self.normalize(message)
 
-        contextual_message = prompts.get(
-            follow_up_intent,
-            f"{message} El medicamento del que hablamos es {medicine}.",
+        for intent, patterns in self.FOLLOW_UP_PATTERNS.items():
+            for pattern in patterns:
+                if self.normalize(pattern) in normalized_message:
+                    return intent
+
+        return None
+
+    def _contains_reference(
+        self,
+        message: str,
+    ) -> bool:
+        normalized_message = self.normalize(message)
+
+        words = set(
+            re.findall(
+                r"[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]+",
+                normalized_message,
+            )
         )
 
-        return await self._call_assistant(contextual_message)
+        for reference in self.REFERENCE_WORDS:
+            normalized_reference = self.normalize(reference)
 
-    async def chat(self, message: str, session_id: str) -> dict[str, Any]:
+            if " " in normalized_reference:
+                if normalized_reference in normalized_message:
+                    return True
+            elif normalized_reference in words:
+                return True
+
+        return normalized_message.startswith("y ")
+
+    def _extract_medicine_from_dict(
+        self,
+        value: dict[str, Any],
+    ) -> str | None:
+        for key in self.MEDICINE_KEYS:
+            candidate = value.get(key)
+
+            if isinstance(candidate, str) and candidate.strip():
+                return candidate.strip()
+
+        for nested_value in value.values():
+            medicine = self._extract_medicine(nested_value)
+
+            if medicine:
+                return medicine
+
+        return None
+
+    def _extract_medicine_from_text(
+        self,
+        text: str,
+    ) -> str | None:
+        patterns = (
+            r"(?:medicamento|producto|nombre)\s*[:\-]\s*"
+            r"([A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9][A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .\-]{1,80})",
+            r"(?:información|informacion|datos)\s+(?:de|del)\s+"
+            r"([A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9][A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .\-]{1,80})",
+        )
+
+        for pattern in patterns:
+            match = re.search(
+                pattern,
+                text,
+                flags=re.IGNORECASE,
+            )
+
+            if not match:
+                continue
+
+            medicine = match.group(1).strip(" .,:;-")
+
+            stop_words = (
+                "stock",
+                "precio",
+                "caducidad",
+                "proveedor",
+                "categoria",
+                "categoría",
+                "lote",
+            )
+
+            for stop_word in stop_words:
+                medicine = re.split(
+                    rf"\b{re.escape(stop_word)}\b",
+                    medicine,
+                    maxsplit=1,
+                    flags=re.IGNORECASE,
+                )[0].strip()
+
+            if medicine:
+                return medicine
+
+        return None
+
+    def _extract_medicine(
+        self,
+        value: Any,
+    ) -> str | None:
+        if isinstance(value, dict):
+            return self._extract_medicine_from_dict(value)
+
+        if isinstance(value, (list, tuple)):
+            for item in value:
+                medicine = self._extract_medicine(item)
+
+                if medicine:
+                    return medicine
+
+        if isinstance(value, str):
+            return self._extract_medicine_from_text(value)
+
+        return None
+
+    def _build_contextual_message(
+        self,
+        original_message: str,
+        medicine: str,
+        follow_up_intent: str,
+    ) -> str:
+        prompts = {
+            "stock": (
+                f"¿Cuánto stock tiene el medicamento {medicine}?"
+            ),
+            "caducidad": (
+                f"¿Cuándo caduca el medicamento {medicine}?"
+            ),
+            "precio": (
+                f"¿Cuál es el precio del medicamento {medicine}?"
+            ),
+            "proveedor": (
+                f"¿Quién es el proveedor del medicamento {medicine}?"
+            ),
+            "categoria": (
+                f"¿Cuál es la categoría del medicamento {medicine}?"
+            ),
+            "lote": (
+                f"¿Cuál es el lote del medicamento {medicine}?"
+            ),
+            "detalle": (
+                f"Muéstrame toda la información del medicamento {medicine}."
+            ),
+        }
+
+        return prompts.get(
+            follow_up_intent,
+            (
+                f"{original_message}. "
+                f"El medicamento del contexto actual es {medicine}."
+            ),
+        )
+
+    async def chat(
+        self,
+        message: str,
+        session_id: str,
+    ) -> dict[str, Any]:
         clean_message = str(message or "").strip()
         clean_session_id = str(session_id or "").strip()
 
         if not clean_message:
-            raise ValueError("El mensaje no puede estar vacío.")
+            raise ValueError(
+                "El mensaje no puede estar vacío."
+            )
 
         if not clean_session_id:
-            raise ValueError("El identificador de sesión es obligatorio.")
-
-        context = conversation_memory.get(clean_session_id)
-        last_medicine = context.get("ultimo_medicamento")
-        follow_up_intent = self._detect_follow_up(clean_message)
-
-        if (
-            last_medicine
-            and self._looks_like_follow_up(clean_message)
-            and follow_up_intent
-        ):
-            assistant_response = await self._answer_follow_up(
-                message=clean_message,
-                medicine=last_medicine,
-                follow_up_intent=follow_up_intent,
+            raise ValueError(
+                "El identificador de sesión es obligatorio."
             )
-        else:
-            assistant_response = await self._call_assistant(clean_message)
 
-        serialized_response = self._serialize(assistant_response)
-
-        detected_medicine = self._extract_medicine_from_response(
-            serialized_response
+        previous_context = conversation_memory.get(
+            clean_session_id
         )
 
-        effective_medicine = detected_medicine or last_medicine
+        previous_medicine = previous_context.get(
+            "ultimo_medicamento"
+        )
+
+        follow_up_intent = self._detect_follow_up_intent(
+            clean_message
+        )
+
+        has_reference = self._contains_reference(
+            clean_message
+        )
+
+        used_memory = bool(
+            previous_medicine
+            and follow_up_intent
+            and (
+                has_reference
+                or len(clean_message.split()) <= 7
+            )
+        )
+
+        effective_message = clean_message
+
+        if used_memory:
+            effective_message = self._build_contextual_message(
+                original_message=clean_message,
+                medicine=previous_medicine,
+                follow_up_intent=follow_up_intent,
+            )
+
+        assistant_result = await self._execute_assistant(
+            effective_message
+        )
+
+        serialized_result = self.serialize(
+            assistant_result
+        )
+
+        detected_medicine = self._extract_medicine(
+            serialized_result
+        )
+
+        effective_medicine = (
+            detected_medicine
+            or previous_medicine
+        )
 
         updated_context = conversation_memory.update(
             clean_session_id,
             ultimo_mensaje=clean_message,
+            ultimo_mensaje_procesado=effective_message,
             ultima_intencion=follow_up_intent,
             ultimo_medicamento=effective_medicine,
-            ultima_respuesta=serialized_response,
+            ultima_respuesta=serialized_result,
         )
 
         return {
-            "respuesta": serialized_response,
+            "respuesta": serialized_result,
             "sesion_id": clean_session_id,
+            "memoria_utilizada": used_memory,
             "contexto": updated_context,
         }
 
-    def get_context(self, session_id: str) -> dict[str, Any]:
+    def get_context(
+        self,
+        session_id: str,
+    ) -> dict[str, Any]:
         return conversation_memory.get(session_id)
 
-    def delete_context(self, session_id: str) -> bool:
+    def delete_context(
+        self,
+        session_id: str,
+    ) -> bool:
         return conversation_memory.delete(session_id)
 
 
