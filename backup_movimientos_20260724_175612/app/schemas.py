@@ -51,12 +51,3 @@ class DeleteContextResponse(BaseModel):
     sesion_id: str
     eliminado: bool
     mensaje: str
-
-from typing import Literal
-
-class InventoryMovementRequest(BaseModel):
-    medicamento_id: int = Field(..., ge=1, description="ID del medicamento.")
-    tipo: Literal["ENTRADA", "SALIDA", "AJUSTE", "DEVOLUCION", "CADUCIDAD"]
-    cantidad: int = Field(..., ge=1, description="Cantidad; en AJUSTE es el stock final.")
-    motivo: str | None = Field(default=None, max_length=255)
-    usuario_id: int | None = Field(default=None, ge=1)
