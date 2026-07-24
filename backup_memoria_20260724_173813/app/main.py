@@ -1,4 +1,3 @@
-﻿from app.api.conversation_routes import router as conversation_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,7 +8,7 @@ app = FastAPI(
     title="Pharma Neural Assistant",
     description=(
         "API inteligente para consultas del "
-        "inventario farmacÃ©utico."
+        "inventario farmacéutico."
     ),
     version="1.0.0",
 )
@@ -33,7 +32,3 @@ def inicio():
         "version": "1.0.0",
         "documentacion": "/docs",
     }
-
-# Memoria conversacional
-app.include_router(conversation_router)
-
