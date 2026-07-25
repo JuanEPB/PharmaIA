@@ -1,5 +1,4 @@
-﻿from app.services.purchase_planner_service import purchase_planner_service
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from typing import Any
 
@@ -56,37 +55,6 @@ async def chat(
             message=request.mensaje,
             session_id=request.sesion_id,
         )
-
-        normalized_message = request.mensaje.strip().lower()
-
-        planning_triggers = {
-            "hola",
-            "buenos días",
-            "buenos dias",
-            "buenas tardes",
-            "buenas noches",
-            "inicio",
-            "analiza el inventario",
-            "revisa el inventario",
-            "qué debo comprar",
-            "que debo comprar",
-        }
-
-        if normalized_message in planning_triggers:
-            suggestion = (
-                purchase_planner_service
-                .generar_sugerencia_automatica(
-                    request.sesion_id
-                )
-            )
-
-            if suggestion is not None:
-                return {
-                    "respuesta": suggestion["respuesta"],
-                    "sesion_id": request.sesion_id,
-                    "memoria_utilizada": True,
-                    "contexto": suggestion,
-                }
 
         return result
 
@@ -165,4 +133,3 @@ async def health() -> dict[str, Any]:
         "chat_memory": "enabled",
         "conversational_actions": "enabled",
     }
-

@@ -12,7 +12,7 @@ app = FastAPI(
     title="Pharma Neural Assistant",
     description=(
         "API inteligente para consultas del "
-        "inventario farmacÃ©utico."
+        "inventario farmaceutico."
     ),
     version="1.0.0",
 )
@@ -45,4 +45,3 @@ app.include_router(inventory_router)
 
 # Movimientos de inventario
 app.include_router(movement_router)
-

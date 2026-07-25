@@ -1,4 +1,5 @@
-﻿from __future__ import annotations
+﻿from app.services.purchase_planner_service import purchase_planner_service
+from __future__ import annotations
 
 import re
 import unicodedata
@@ -330,6 +331,12 @@ class ConversationalActionService:
     ) -> dict[str, Any]:
         action_type = pending.get("tipo_accion")
 
+        if action_type == "CONFIRMAR_PLAN_COMPRA":
+            return purchase_planner_service.ejecutar_plan(
+                session_id=session_id,
+                usuario_id=usuario_id,
+            )
+
         if action_type == "MOVIMIENTO_INVENTARIO":
             result = inventory_movement_service.registrar_movimiento(
                 medicamento_id=int(pending["medicamento_id"]),
@@ -422,6 +429,11 @@ class ConversationalActionService:
                 )
 
             if self._is_cancellation(clean_message):
+                if pending.get("tipo_accion") == "CONFIRMAR_PLAN_COMPRA":
+                    return purchase_planner_service.cancelar_plan(
+                        clean_session_id
+                    )
+
                 conversation_memory.update(
                     clean_session_id,
                     accion_pendiente={},
@@ -451,3 +463,4 @@ class ConversationalActionService:
 
 
 conversational_action_service = ConversationalActionService()
+
