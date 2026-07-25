@@ -1,5 +1,4 @@
-﻿from app.services.depletion_prediction_service import depletion_prediction_service
-from app.services.purchase_planner_service import purchase_planner_service
+﻿from app.services.purchase_planner_service import purchase_planner_service
 from __future__ import annotations
 
 from typing import Any
@@ -35,43 +34,6 @@ async def chat(
     request: ChatRequest,
 ) -> dict[str, Any]:
     try:
-        normalized_prediction_message = request.mensaje.strip().lower()
-
-        prediction_prefixes = (
-            "cuando se agotara ",
-            "cuándo se agotará ",
-            "cuando se acaba ",
-            "cuándo se acaba ",
-            "predice el agotamiento de ",
-            "calcula el agotamiento de ",
-        )
-
-        for prediction_prefix in prediction_prefixes:
-            if normalized_prediction_message.startswith(
-                prediction_prefix
-            ):
-                medicine_name = request.mensaje[
-                    len(prediction_prefix):
-                ].strip(" ?.!,;:")
-
-                prediction = (
-                    depletion_prediction_service
-                    .predecir_por_nombre(medicine_name)
-                )
-
-                return {
-                    "respuesta": (
-                        depletion_prediction_service
-                        .construir_respuesta_chat(prediction)
-                    ),
-                    "sesion_id": request.sesion_id,
-                    "memoria_utilizada": False,
-                    "contexto": {
-                        "tipo": "PREDICCION_AGOTAMIENTO",
-                        "prediccion": prediction,
-                    },
-                }
-
         action_result = conversational_action_service.process(
             message=request.mensaje,
             session_id=request.sesion_id,
@@ -203,5 +165,4 @@ async def health() -> dict[str, Any]:
         "chat_memory": "enabled",
         "conversational_actions": "enabled",
     }
-
 
