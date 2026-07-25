@@ -11,9 +11,6 @@ from app.schemas import (
     DeleteContextResponse,
 )
 from app.services.conversation_service import conversation_service
-from app.services.conversational_action_service import (
-    conversational_action_service,
-)
 
 
 router = APIRouter(
@@ -23,40 +20,23 @@ router = APIRouter(
 
 @router.post(
     "/chat",
-    summary="Consultar o ejecutar acciones con el asistente",
+    response_model=ChatResponse,
+    summary="Consultar el asistente con memoria conversacional",
     description=(
-        "Responde consultas en lenguaje natural y permite ejecutar "
-        "acciones de inventario mediante confirmación explícita."
+        "Procesa una consulta en lenguaje natural y conserva el contexto "
+        "utilizando el campo sesion_id."
     ),
 )
 async def chat(
     request: ChatRequest,
-) -> dict[str, Any]:
+) -> ChatResponse:
     try:
-        action_result = conversational_action_service.process(
-            message=request.mensaje,
-            session_id=request.sesion_id,
-            usuario_id=getattr(
-                request,
-                "usuario_id",
-                None,
-            ),
-        )
-
-        if action_result is not None:
-            return {
-                "respuesta": action_result.get("respuesta"),
-                "sesion_id": request.sesion_id,
-                "memoria_utilizada": True,
-                "contexto": action_result,
-            }
-
         result = await conversation_service.chat(
             message=request.mensaje,
             session_id=request.sesion_id,
         )
 
-        return result
+        return ChatResponse(**result)
 
     except ValueError as exc:
         raise HTTPException(
@@ -74,8 +54,8 @@ async def chat(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=(
-                "Ocurrió un error al procesar la solicitud. "
-                f"Detalle: {exc}"
+                "Ocurrió un error inesperado al procesar "
+                f"la consulta: {exc}"
             ),
         ) from exc
 
@@ -115,7 +95,7 @@ async def delete_chat_context(
         sesion_id=sesion_id,
         eliminado=deleted,
         mensaje=(
-            "La memoria de la conversación fue eliminada."
+            "La memoria de la conversación fue eliminada correctamente."
             if deleted
             else "La sesión no tenía memoria almacenada."
         ),
@@ -131,5 +111,4 @@ async def health() -> dict[str, Any]:
         "status": "ok",
         "service": "Pharma Neural Assistant",
         "chat_memory": "enabled",
-        "conversational_actions": "enabled",
     }
