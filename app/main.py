@@ -1,6 +1,7 @@
 ﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.agent_routes import router as agent_router
 from app.api.anomaly_routes import router as anomaly_router
 from app.api.conversation_routes import router as conversation_router
 from app.api.dashboard_routes import router as dashboard_router
@@ -69,6 +70,9 @@ app.include_router(vision_router)
 
 # Voz
 app.include_router(voice_router)
+
+# Agente autónomo
+app.include_router(agent_router)
 
 # Predicción de agotamiento
 app.include_router(depletion_router)
