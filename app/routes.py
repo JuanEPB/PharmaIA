@@ -23,6 +23,56 @@ router = APIRouter(
 )
 
 
+def build_welcome_response(
+    session_id: str,
+) -> dict[str, Any]:
+    options = [
+        {
+            "id": "dashboard_predictivo",
+            "texto": "Ver dashboard predictivo",
+            "mensaje_sugerido": "Muéstrame el dashboard predictivo",
+        },
+        {
+            "id": "plan_compras",
+            "texto": "Saber qué debo comprar",
+            "mensaje_sugerido": "Qué debo comprar",
+        },
+        {
+            "id": "alertas",
+            "texto": "Revisar alertas de inventario",
+            "mensaje_sugerido": "Muéstrame las alertas",
+        },
+        {
+            "id": "agotamiento",
+            "texto": "Predecir agotamiento",
+            "mensaje_sugerido": (
+                "Cuándo se agotará Paracetamol"
+            ),
+        },
+        {
+            "id": "reporte",
+            "texto": "Generar reporte ejecutivo",
+            "mensaje_sugerido": "Genera un reporte ejecutivo",
+        },
+    ]
+
+    return {
+        "respuesta": (
+            "Hola. Soy tu asistente IA de inventario. "
+            "Puedo ayudarte a revisar riesgos, compras, "
+            "alertas, predicciones y reportes. "
+            "Elige una opción o escribe tu pregunta."
+        ),
+        "sesion_id": session_id,
+        "memoria_utilizada": False,
+        "contexto": {
+            "tipo": "BIENVENIDA",
+            "opciones": options,
+        },
+        "opciones": options,
+    }
+
+
 @router.post(
     "/chat",
     summary="Consultar o ejecutar acciones con el asistente",
@@ -36,6 +86,23 @@ async def chat(
 ) -> dict[str, Any]:
     try:
         normalized_prediction_message = request.mensaje.strip().lower()
+
+        greeting_triggers = {
+            "hola",
+            "buenos días",
+            "buenos dias",
+            "buenas tardes",
+            "buenas noches",
+            "inicio",
+            "menu",
+            "menú",
+            "ayuda",
+        }
+
+        if normalized_prediction_message in greeting_triggers:
+            return build_welcome_response(
+                request.sesion_id
+            )
 
         prediction_prefixes = (
             "cuando se agotara ",
@@ -98,12 +165,6 @@ async def chat(
         normalized_message = request.mensaje.strip().lower()
 
         planning_triggers = {
-            "hola",
-            "buenos días",
-            "buenos dias",
-            "buenas tardes",
-            "buenas noches",
-            "inicio",
             "analiza el inventario",
             "revisa el inventario",
             "qué debo comprar",
