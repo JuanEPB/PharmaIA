@@ -114,6 +114,7 @@ class DepletionPredictionRepository:
                     stock,
                     stock_minimo,
                     precio,
+                    farmacia_id,
                     proveedorId AS proveedor_id,
                     categoriaId AS categoria_id
                 FROM medicamentos
@@ -164,6 +165,7 @@ class DepletionPredictionRepository:
                     stock,
                     stock_minimo,
                     precio,
+                    farmacia_id,
                     proveedorId AS proveedor_id,
                     categoriaId AS categoria_id
                 FROM medicamentos
@@ -313,6 +315,7 @@ class DepletionPredictionRepository:
                     stock,
                     stock_minimo,
                     precio,
+                    farmacia_id,
                     proveedorId AS proveedor_id,
                     categoriaId AS categoria_id
                 FROM medicamentos
@@ -331,6 +334,86 @@ class DepletionPredictionRepository:
         finally:
             cursor.close()
             connection.close()
+
+    def guardar_prediccion(
+        self,
+        prediction: dict[str, Any],
+    ) -> None:
+        medicine = prediction.get("medicamento") or {}
+        medicine_id = int(medicine["id"])
+
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        try:
+            cursor.execute(
+                """
+                INSERT INTO ia_predicciones_inventario (
+                    medicamento_id,
+                    farmacia_id,
+                    tipo_prediccion,
+                    riesgo,
+                    valor_estimado,
+                    dias_estimados,
+                    confianza,
+                    detalles
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    medicine_id,
+                    medicine.get("farmacia_id"),
+                    "AGOTAMIENTO",
+                    prediction.get("nivel_riesgo"),
+                    prediction.get("consumo_promedio_diario"),
+                    prediction.get("cobertura_estimada_dias"),
+                    self._confidence_to_decimal(
+                        prediction.get("confianza_prediccion")
+                    ),
+                    self._to_json(prediction),
+                ),
+            )
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            cursor.close()
+            connection.close()
+
+    @staticmethod
+    def _confidence_to_decimal(confidence: Any) -> float:
+        mapping = {
+            "BAJA": 0.35,
+            "MEDIA": 0.65,
+            "ALTA": 0.9,
+        }
+
+        return mapping.get(
+            str(confidence or "").upper(),
+            0.0,
+        )
+
+    @staticmethod
+    def _to_json(value: Any) -> str:
+        import json
+        from datetime import date, datetime
+        from decimal import Decimal
+
+        def default(item: Any) -> str:
+            if isinstance(item, (date, datetime)):
+                return item.isoformat()
+
+            if isinstance(item, Decimal):
+                return str(item)
+
+            return str(item)
+
+        return json.dumps(
+            value,
+            ensure_ascii=False,
+            default=default,
+        )
 
 
 depletion_prediction_repository = DepletionPredictionRepository()

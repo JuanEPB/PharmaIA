@@ -94,13 +94,17 @@ def test_depletion_prediction() -> None:
         "app.services.depletion_prediction_service."
         "depletion_prediction_repository.obtener_consumo_diario",
         return_value=daily_rows,
-    ):
+    ), patch(
+        "app.services.depletion_prediction_service."
+        "depletion_prediction_repository.guardar_prediccion",
+    ) as save_prediction:
         result = service.predecir_medicamento(1)
 
     assert result["consumo_promedio_diario"] == 5
     assert result["cobertura_estimada_dias"] == 8
     assert result["nivel_riesgo"] == "ALTO"
     assert result["cantidad_compra_recomendada"] == 145
+    save_prediction.assert_called_once()
 
 
 def test_no_history_returns_no_date() -> None:
@@ -140,6 +144,10 @@ def test_no_history_returns_no_date() -> None:
         "app.services.depletion_prediction_service."
         "depletion_prediction_repository.obtener_consumo_diario",
         return_value=[],
+    ), patch(
+        "app.services.depletion_prediction_service."
+        "depletion_prediction_repository.guardar_prediccion",
+        side_effect=RuntimeError("sin tabla"),
     ):
         result = service.predecir_medicamento(1)
 

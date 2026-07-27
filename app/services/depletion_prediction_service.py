@@ -339,13 +339,14 @@ class DepletionPredictionService:
             variation_coefficient=variation_coefficient,
         )
 
-        return self.serialize(
+        prediction = self.serialize(
             {
                 "medicamento": {
                     "id": int(medicine["id"]),
                     "nombre": medicine.get("nombre"),
                     "lote": medicine.get("lote"),
                     "caducidad": medicine.get("caducidad"),
+                    "farmacia_id": medicine.get("farmacia_id"),
                 },
                 "stock_actual": stock,
                 "stock_minimo": stock_minimum,
@@ -402,6 +403,15 @@ class DepletionPredictionService:
                 ),
             }
         )
+
+        try:
+            depletion_prediction_repository.guardar_prediccion(
+                prediction
+            )
+        except Exception:
+            pass
+
+        return prediction
 
     def predecir_por_nombre(
         self,
