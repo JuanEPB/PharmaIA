@@ -12,6 +12,7 @@ from app.api.movement_routes import router as movement_router
 from app.api.recommendation_routes import router as recommendation_router
 from app.api.report_routes import router as report_router
 from app.api.profile_routes import router as profile_router
+from app.api.sales_routes import router as sales_router
 from app.api.vision_routes import router as vision_router
 from app.api.voice_routes import router as voice_router
 from app.config.settings import settings
@@ -62,6 +63,9 @@ app.include_router(dashboard_router)
 
 # Movimientos de inventario
 app.include_router(movement_router)
+
+# Ventas y tickets
+app.include_router(sales_router)
 
 # Detección de anomalías
 app.include_router(anomaly_router)

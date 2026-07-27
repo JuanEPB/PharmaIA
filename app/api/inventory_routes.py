@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, Response, status
 
 from app.services.inventory_statistics_service import (
     inventory_statistics_service,
@@ -10,6 +10,7 @@ from app.services.inventory_statistics_service import (
 from app.services.stock_alert_report_service import (
     stock_alert_report_service,
 )
+from app.services.pdf_export_service import pdf_export_service
 
 
 router = APIRouter(
@@ -88,6 +89,41 @@ async def get_low_stock_report(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=(
                 "No fue posible generar el reporte de bajo stock. "
+                f"Detalle: {exc}"
+            ),
+        ) from exc
+
+
+@router.get(
+    "/alertas/reporte-bajo-stock.pdf",
+    summary="Descargar reporte de bajo stock en PDF",
+)
+async def download_low_stock_report_pdf(
+    limite: int = Query(
+        default=100,
+        ge=1,
+        le=500,
+    ),
+) -> Response:
+    try:
+        pdf = pdf_export_service.generar_reporte_bajo_stock_pdf(
+            limite=limite
+        )
+        return Response(
+            content=pdf,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": (
+                    'attachment; filename="reporte-bajo-stock.pdf"'
+                )
+            },
+        )
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=(
+                "No fue posible generar el PDF de bajo stock. "
                 f"Detalle: {exc}"
             ),
         ) from exc

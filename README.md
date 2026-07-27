@@ -127,6 +127,8 @@ After starting the server:
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 - App/AI profile: `http://localhost:8000/perfil`
+- Sale ticket PDF: `http://localhost:8000/ventas/{venta_id}/ticket.pdf`
+- Low stock PDF: `http://localhost:8000/inventario/alertas/reporte-bajo-stock.pdf`
 
 ## Example Requests
 
