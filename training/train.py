@@ -1,3 +1,4 @@
+import argparse
 import json
 import pickle
 import random
@@ -6,7 +7,6 @@ import unicodedata
 from collections import Counter
 from pathlib import Path
 
-import numpy as np
 import torch
 import torch.nn as nn
 from sklearn.preprocessing import LabelEncoder
@@ -171,11 +171,20 @@ class IntentClassifier(nn.Module):
 
 def establecer_semilla(semilla: int = 42):
     random.seed(semilla)
-    np.random.seed(semilla)
     torch.manual_seed(semilla)
 
+    try:
+        import numpy as np
 
-def entrenar():
+        np.random.seed(semilla)
+    except Exception as error:
+        print(
+            "Aviso: no se pudo inicializar la semilla de numpy. "
+            f"El entrenamiento continua con torch/random. Detalle: {error}"
+        )
+
+
+def entrenar(epochs: int = EPOCHS):
     establecer_semilla()
 
     print("Cargando datos de entrenamiento...")
@@ -222,7 +231,7 @@ def entrenar():
 
     print("\nIniciando entrenamiento...\n")
 
-    for epoch in range(EPOCHS):
+    for epoch in range(epochs):
         modelo.train()
 
         perdida_total = 0
@@ -257,7 +266,7 @@ def entrenar():
 
         if epoch == 0 or (epoch + 1) % 25 == 0:
             print(
-                f"Época {epoch + 1:03d}/{EPOCHS} | "
+                f"Época {epoch + 1:03d}/{epochs} | "
                 f"Pérdida: {perdida_promedio:.4f} | "
                 f"Precisión: {precision * 100:.2f}%"
             )
@@ -311,5 +320,27 @@ def entrenar():
     print(f"Modelo guardado en: {ruta_modelo}")
 
 
+def leer_argumentos():
+    parser = argparse.ArgumentParser(
+        description="Entrena el clasificador de intenciones de Pharma Neural."
+    )
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=EPOCHS,
+        help=f"Cantidad de épocas de entrenamiento. Por defecto: {EPOCHS}.",
+    )
+
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    entrenar()
+    argumentos = leer_argumentos()
+
+    try:
+        entrenar(epochs=argumentos.epochs)
+    except KeyboardInterrupt:
+        print(
+            "\nEntrenamiento cancelado por el usuario. "
+            "Vuelve a ejecutar el comando sin cerrar la terminal."
+        )
