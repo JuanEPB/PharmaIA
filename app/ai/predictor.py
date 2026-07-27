@@ -1,11 +1,15 @@
 import pickle
 import re
 import unicodedata
+import logging
+from copy import deepcopy
+from functools import lru_cache
 from pathlib import Path
 
 import torch
 import torch.nn as nn
 
+logger = logging.getLogger(__name__)
 
 # =========================================================
 # RUTAS DEL PROYECTO
@@ -107,6 +111,8 @@ class PharmaPredictor:
         with open(ENCODER_PATH, "rb") as archivo:
             self.label_encoder = pickle.load(archivo)
 
+        self.labels = list(self.label_encoder.classes_)
+
         self.max_length = checkpoint["max_length"]
 
         self.modelo = IntentClassifier(
@@ -121,9 +127,12 @@ class PharmaPredictor:
         )
 
         self.modelo.eval()
+        torch.set_num_threads(1)
 
-        print("Modelo Pharma Neural cargado correctamente.")
-        print(f"Ruta del modelo: {MODEL_PATH}")
+        logger.info(
+            "Modelo Pharma Neural cargado correctamente desde %s",
+            MODEL_PATH,
+        )
 
     def _validar_archivos(self) -> None:
         archivos_requeridos = [
@@ -234,9 +243,28 @@ class PharmaPredictor:
                 "predicciones": [],
             }
 
-        entrada = self.texto_a_tensor(texto)
+        cache_key = self.limpiar_texto(texto)
 
-        with torch.no_grad():
+        result = deepcopy(
+            self._predecir_normalizado(
+                cache_key,
+                umbral,
+            )
+        )
+
+        result["mensaje"] = texto
+
+        return result
+
+    @lru_cache(maxsize=512)
+    def _predecir_normalizado(
+        self,
+        texto_limpio: str,
+        umbral: float,
+    ) -> dict:
+        entrada = self.texto_limpio_a_tensor(texto_limpio)
+
+        with torch.inference_mode():
             salida = self.modelo(entrada)
 
             probabilidades = torch.softmax(
@@ -252,11 +280,7 @@ class PharmaPredictor:
         confianza = confianza_tensor.item()
         indice = indice_tensor.item()
 
-        intencion_detectada = (
-            self.label_encoder.inverse_transform(
-                [indice]
-            )[0]
-        )
+        intencion_detectada = self.labels[indice]
 
         if confianza < umbral:
             intencion_final = "desconocido"
@@ -268,11 +292,7 @@ class PharmaPredictor:
         for posicion, probabilidad in enumerate(
             probabilidades[0].tolist()
         ):
-            etiqueta = (
-                self.label_encoder.inverse_transform(
-                    [posicion]
-                )[0]
-            )
+            etiqueta = self.labels[posicion]
 
             predicciones.append(
                 {
@@ -294,7 +314,7 @@ class PharmaPredictor:
         )
 
         return {
-            "mensaje": texto,
+            "mensaje": texto_limpio,
             "intencion": intencion_final,
             "intencion_detectada": intencion_detectada,
             "confianza": round(
@@ -316,6 +336,40 @@ class PharmaPredictor:
         return self.predecir(
             texto=texto,
             umbral=umbral,
+        )
+
+    def texto_limpio_a_tensor(
+        self,
+        texto_limpio: str,
+    ) -> torch.Tensor:
+        palabras = texto_limpio.split()
+
+        indice_desconocido = self.vocabulario.get(
+            "<UNK>",
+            1,
+        )
+
+        indice_padding = self.vocabulario.get(
+            "<PAD>",
+            0,
+        )
+
+        secuencia = [
+            self.vocabulario.get(
+                palabra,
+                indice_desconocido,
+            )
+            for palabra in palabras
+        ]
+
+        secuencia = secuencia[:self.max_length]
+
+        while len(secuencia) < self.max_length:
+            secuencia.append(indice_padding)
+
+        return torch.tensor(
+            [secuencia],
+            dtype=torch.long,
         )
 
 

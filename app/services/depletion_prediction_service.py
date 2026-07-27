@@ -210,6 +210,7 @@ class DepletionPredictionService:
     def predecir_medicamento(
         self,
         medicamento_id: int,
+        persistir: bool = True,
     ) -> dict[str, Any]:
         configuration = (
             depletion_prediction_repository
@@ -404,12 +405,13 @@ class DepletionPredictionService:
             }
         )
 
-        try:
-            depletion_prediction_repository.guardar_prediccion(
-                prediction
-            )
-        except Exception:
-            pass
+        if persistir:
+            try:
+                depletion_prediction_repository.guardar_prediccion(
+                    prediction
+                )
+            except Exception:
+                pass
 
         return prediction
 
@@ -436,7 +438,8 @@ class DepletionPredictionService:
 
         for medicine in medicines:
             prediction = self.predecir_medicamento(
-                int(medicine["id"])
+                int(medicine["id"]),
+                persistir=False,
             )
 
             if solo_riesgo and prediction["nivel_riesgo"] not in {
@@ -448,6 +451,13 @@ class DepletionPredictionService:
                 continue
 
             predictions.append(prediction)
+
+        try:
+            depletion_prediction_repository.guardar_predicciones(
+                predictions
+            )
+        except Exception:
+            pass
 
         risk_order = {
             "AGOTADO": 0,

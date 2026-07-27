@@ -339,14 +339,25 @@ class DepletionPredictionRepository:
         self,
         prediction: dict[str, Any],
     ) -> None:
-        medicine = prediction.get("medicamento") or {}
-        medicine_id = int(medicine["id"])
+        self.guardar_predicciones([prediction])
+
+    def guardar_predicciones(
+        self,
+        predictions: list[dict[str, Any]],
+    ) -> None:
+        if not predictions:
+            return
+
+        values = [
+            self._prediction_values(prediction)
+            for prediction in predictions
+        ]
 
         connection = create_connection()
         cursor = connection.cursor()
 
         try:
-            cursor.execute(
+            cursor.executemany(
                 """
                 INSERT INTO ia_predicciones_inventario (
                     medicamento_id,
@@ -360,18 +371,7 @@ class DepletionPredictionRepository:
                 )
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """,
-                (
-                    medicine_id,
-                    medicine.get("farmacia_id"),
-                    "AGOTAMIENTO",
-                    prediction.get("nivel_riesgo"),
-                    prediction.get("consumo_promedio_diario"),
-                    prediction.get("cobertura_estimada_dias"),
-                    self._confidence_to_decimal(
-                        prediction.get("confianza_prediccion")
-                    ),
-                    self._to_json(prediction),
-                ),
+                values,
             )
             connection.commit()
         except Exception:
@@ -380,6 +380,26 @@ class DepletionPredictionRepository:
         finally:
             cursor.close()
             connection.close()
+
+    def _prediction_values(
+        self,
+        prediction: dict[str, Any],
+    ) -> tuple[Any, ...]:
+        medicine = prediction.get("medicamento") or {}
+        medicine_id = int(medicine["id"])
+
+        return (
+            medicine_id,
+            medicine.get("farmacia_id"),
+            "AGOTAMIENTO",
+            prediction.get("nivel_riesgo"),
+            prediction.get("consumo_promedio_diario"),
+            prediction.get("cobertura_estimada_dias"),
+            self._confidence_to_decimal(
+                prediction.get("confianza_prediccion")
+            ),
+            self._to_json(prediction),
+        )
 
     @staticmethod
     def _confidence_to_decimal(confidence: Any) -> float:
