@@ -20,9 +20,9 @@ app = FastAPI(
     title="Pharma Neural Assistant",
     description=(
         "API inteligente para consultas del "
-        "inventario farmaceutico."
+        "inventario farmaceutico. Version 2."
     ),
-    version="1.0.0",
+    version="2.0.0",
 )
 
 app.add_middleware(
@@ -41,7 +41,8 @@ def inicio():
     return {
         "nombre": "Pharma Neural Assistant",
         "estado": "activo",
-        "version": "1.0.0",
+        "version": "2.0.0",
+        "etapa": "Version 2",
         "documentacion": "/docs",
     }
 
