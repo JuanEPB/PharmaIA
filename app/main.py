@@ -2,6 +2,7 @@
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.conversation_routes import router as conversation_router
+from app.api.dashboard_routes import router as dashboard_router
 from app.api.depletion_routes import router as depletion_router
 from app.api.inventory_routes import router as inventory_router
 from app.api.movement_routes import router as movement_router
@@ -42,6 +43,9 @@ app.include_router(conversation_router)
 
 # Dashboard de inventario
 app.include_router(inventory_router)
+
+# Dashboard predictivo
+app.include_router(dashboard_router)
 
 # Movimientos de inventario
 app.include_router(movement_router)
