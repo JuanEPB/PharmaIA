@@ -56,3 +56,30 @@ def test_skip_high_confidence_message() -> None:
 
     assert not captured
     assert not TEST_QUEUE_PATH.exists()
+
+
+def test_capture_user_feedback() -> None:
+    clean_queue()
+
+    service = LearningFeedbackService(
+        queue_path=TEST_QUEUE_PATH,
+    )
+
+    event = service.capture_user_feedback(
+        message="que debo comprar",
+        response="Compra Paracetamol.",
+        helpful=False,
+        session_id="sesion-test",
+        intent="planear_compras",
+        correction="Debe mostrar cantidades y proveedor.",
+    )
+
+    content = TEST_QUEUE_PATH.read_text(
+        encoding="utf-8"
+    )
+
+    assert event["tipo"] == "feedback_usuario"
+    assert event["estado"] == "pendiente_revision"
+    assert "Debe mostrar cantidades" in content
+
+    clean_queue()

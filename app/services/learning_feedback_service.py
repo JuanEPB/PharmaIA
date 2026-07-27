@@ -90,5 +90,62 @@ class LearningFeedbackService:
 
         return True
 
+    def capture_user_feedback(
+        self,
+        *,
+        message: str,
+        response: str,
+        helpful: bool,
+        session_id: str,
+        intent: str | None = None,
+        correction: str | None = None,
+    ) -> dict[str, Any]:
+        clean_message = (message or "").strip()
+        clean_response = (response or "").strip()
+
+        if not clean_message:
+            raise ValueError("El mensaje original es requerido.")
+
+        self.queue_path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        event = {
+            "timestamp": datetime.now(
+                timezone.utc
+            ).isoformat(),
+            "tipo": "feedback_usuario",
+            "sesion_id": session_id,
+            "mensaje": clean_message,
+            "respuesta": clean_response,
+            "intencion": intent,
+            "util": helpful,
+            "correccion": (
+                (correction or "").strip()
+                if correction
+                else None
+            ),
+            "estado": (
+                "aprobado_para_entrenamiento"
+                if helpful
+                else "pendiente_revision"
+            ),
+        }
+
+        with self.queue_path.open(
+            "a",
+            encoding="utf-8",
+        ) as file:
+            file.write(
+                json.dumps(
+                    event,
+                    ensure_ascii=False,
+                )
+                + "\n"
+            )
+
+        return event
+
 
 learning_feedback_service = LearningFeedbackService()

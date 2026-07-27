@@ -7,6 +7,7 @@ from app.api.conversation_routes import router as conversation_router
 from app.api.dashboard_routes import router as dashboard_router
 from app.api.depletion_routes import router as depletion_router
 from app.api.inventory_routes import router as inventory_router
+from app.api.learning_routes import router as learning_router
 from app.api.movement_routes import router as movement_router
 from app.api.recommendation_routes import router as recommendation_router
 from app.api.report_routes import router as report_router
@@ -76,4 +77,7 @@ app.include_router(agent_router)
 
 # Predicción de agotamiento
 app.include_router(depletion_router)
+
+# Aprendizaje por feedback del usuario
+app.include_router(learning_router)
 
