@@ -7,6 +7,9 @@ from fastapi import APIRouter, HTTPException, Query, status
 from app.services.inventory_statistics_service import (
     inventory_statistics_service,
 )
+from app.services.stock_alert_report_service import (
+    stock_alert_report_service,
+)
 
 
 router = APIRouter(
@@ -59,6 +62,32 @@ async def get_inventory_alerts(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=(
                 "No fue posible obtener las alertas. "
+                f"Detalle: {exc}"
+            ),
+        ) from exc
+
+
+@router.get(
+    "/alertas/reporte-bajo-stock",
+    summary="Generar reporte imprimible de bajo stock",
+)
+async def get_low_stock_report(
+    limite: int = Query(
+        default=100,
+        ge=1,
+        le=500,
+    ),
+) -> dict[str, Any]:
+    try:
+        return stock_alert_report_service.generar_reporte_bajo_stock(
+            limite
+        )
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=(
+                "No fue posible generar el reporte de bajo stock. "
                 f"Detalle: {exc}"
             ),
         ) from exc
