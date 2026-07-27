@@ -5,6 +5,10 @@ from datetime import datetime, timedelta
 from threading import RLock
 from typing import Any
 
+from app.repositories.ai_operational_repository import (
+    ai_operational_repository,
+)
+
 
 class ConversationMemory:
     """
@@ -66,7 +70,12 @@ class ConversationMemory:
             session = self._sessions.get(normalized_id)
 
             if not session:
-                return {}
+                try:
+                    return ai_operational_repository.get_conversation_memory(
+                        normalized_id
+                    )
+                except Exception:
+                    return {}
 
             public_session = {
                 key: value
@@ -106,7 +115,15 @@ class ConversationMemory:
                 if not key.startswith("_")
             }
 
-            return deepcopy(public_session)
+        try:
+            ai_operational_repository.upsert_conversation_memory(
+                normalized_id,
+                public_session,
+            )
+        except Exception:
+            pass
+
+        return deepcopy(public_session)
 
     def delete(self, session_id: str) -> bool:
         normalized_id = self._normalize_session_id(session_id)
@@ -115,7 +132,19 @@ class ConversationMemory:
             return False
 
         with self._lock:
-            return self._sessions.pop(normalized_id, None) is not None
+            deleted = self._sessions.pop(normalized_id, None) is not None
+
+        try:
+            deleted = (
+                ai_operational_repository.delete_conversation_memory(
+                    normalized_id
+                )
+                or deleted
+            )
+        except Exception:
+            pass
+
+        return deleted
 
     def clear(self) -> None:
         with self._lock:

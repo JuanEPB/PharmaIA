@@ -6,6 +6,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from app.repositories.ai_operational_repository import (
+    ai_operational_repository,
+)
+
 
 PROJECT_DIR = Path(__file__).resolve().parents[2]
 LEARNING_QUEUE_PATH = PROJECT_DIR / "training" / "learning_queue.jsonl"
@@ -90,6 +94,8 @@ class LearningFeedbackService:
                 + "\n"
             )
 
+        self._persist_event(event)
+
         return True
 
     def capture_user_feedback(
@@ -147,6 +153,8 @@ class LearningFeedbackService:
                 )
                 + "\n"
             )
+
+        self._persist_event(event)
 
         return event
 
@@ -229,7 +237,43 @@ class LearningFeedbackService:
                     + "\n"
                 )
 
+        self._persist_event_status(
+            event_id,
+            status,
+        )
+
         return updated_event
+
+    def _should_persist_database(self) -> bool:
+        return self.queue_path == LEARNING_QUEUE_PATH
+
+    def _persist_event(
+        self,
+        event: dict[str, Any],
+    ) -> None:
+        if not self._should_persist_database():
+            return
+
+        try:
+            ai_operational_repository.save_learning_feedback(event)
+        except Exception:
+            pass
+
+    def _persist_event_status(
+        self,
+        event_id: str,
+        status: str,
+    ) -> None:
+        if not self._should_persist_database():
+            return
+
+        try:
+            ai_operational_repository.update_learning_feedback_status(
+                event_id,
+                status,
+            )
+        except Exception:
+            pass
 
 
 learning_feedback_service = LearningFeedbackService()
