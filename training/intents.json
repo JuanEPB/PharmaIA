@@ -31,7 +31,15 @@
         "Lista de productos con stock bajo",
         "Que debo revisar por baja existencia",
         "Medicamentos por debajo del minimo",
-        "Productos que estan casi agotados"
+        "Productos que estan casi agotados",
+        "Que med tienen poco stoc",
+        "Cuales se tan acabando",
+        "Revisa los que casi no hay",
+        "Los medicamentos que estan bajitos",
+        "Que productos ya casi se acaban",
+        "Muestrame poco stok",
+        "Hay algo con poca existencia",
+        "Checa bajo estoc"
       ]
     },
     {
@@ -48,7 +56,14 @@
         "Muestrame medicamentos sin stock",
         "Hay productos agotados",
         "Cuales medicamentos ya se acabaron",
-        "Productos que no tienen existencia"
+        "Productos que no tienen existencia",
+        "Que med ya no hay",
+        "Cuales estan en cero",
+        "Ya se acabo algun medicamento",
+        "Que productos no quedan",
+        "No hay existencia de que",
+        "Dime los agotados",
+        "Medicamentos sin nada de stock"
       ]
     },
     {
@@ -65,7 +80,14 @@
         "Lista de productos proximos a caducar",
         "Medicamentos con fecha de caducidad cercana",
         "Que productos debo sacar por caducidad",
-        "Revisa caducidades proximas"
+        "Revisa caducidades proximas",
+        "Que se va a vencer",
+        "Que med caduca pronto",
+        "Cuales se vencen ya",
+        "Checa los cadukados",
+        "Que productos cadukan",
+        "Me dices los que se vencen",
+        "Algo por vencer pronto"
       ]
     },
     {
@@ -82,7 +104,14 @@
         "Busca informacion del producto",
         "Encuentra datos de una medicina",
         "Muestrame el producto paracetamol",
-        "Revisa si existe este medicamento"
+        "Revisa si existe este medicamento",
+        "Busca este med",
+        "Checa si hay genoprazol",
+        "Me buscas tabcin",
+        "Aver si esta ese medicamento",
+        "Encuentra la medicina",
+        "Quiero info de un med",
+        "Busca meicamento por nombre"
       ]
     },
     {
@@ -97,7 +126,14 @@
         "Que hay en inventario",
         "Dame el listado de productos",
         "Quiero ver todos los productos",
-        "Consulta general del inventario"
+        "Consulta general del inventario",
+        "Muestrame los meicmanetos",
+        "Quiero ver la base",
+        "Que hay en la farmacia",
+        "Dame todo lo que hay",
+        "Lista completa de meds",
+        "Ensename inventario completo",
+        "Ver todos los med"
       ]
     },
     {
@@ -112,7 +148,14 @@
         "Resumen general de medicamentos",
         "Dime como va el stock",
         "Reporte rapido del inventario",
-        "Panorama general del inventario"
+        "Panorama general del inventario",
+        "Como anda el inventario",
+        "Como esta todo",
+        "Dame resumen rapido",
+        "Revisa como vamos",
+        "Analiza la base",
+        "Que ves en inventario",
+        "Dime que falta"
       ]
     },
     {
@@ -125,7 +168,12 @@
         "Consulta la categoria vitaminas",
         "Productos por categoria",
         "Ver medicamentos agrupados por categoria",
-        "Busca por categoria"
+        "Busca por categoria",
+        "Muestrame por categori",
+        "Que hay de analgesicos",
+        "Busca categoria antibiotico",
+        "Ver por tipo de producto",
+        "Medicamentos por tipo"
       ]
     },
     {
@@ -138,7 +186,12 @@
         "Productos de un proveedor",
         "Ver inventario por proveedor",
         "Busca por proveedor",
-        "Que hay del proveedor"
+        "Que hay del proveedor",
+        "Muestrame por provedor",
+        "Que trae este proveedor",
+        "Busca proveedor",
+        "Productos del provedor",
+        "Ver por distribuidor"
       ]
     },
     {
@@ -153,7 +206,15 @@
         "Recomiendame compras",
         "Analiza que productos comprar",
         "Haz un plan de compras",
-        "Prepara compras para productos criticos"
+        "Prepara compras para productos criticos",
+        "Que compro",
+        "Que tengo que comprar",
+        "Que falta comprar",
+        "Hazme compras",
+        "Que pido al proveedor",
+        "Que med repongo",
+        "Dime que comprar",
+        "Que me recomiendas comprar"
       ]
     },
     {
@@ -168,7 +229,14 @@
         "Fecha probable de agotamiento",
         "Que medicamento se acaba primero",
         "Estima el agotamiento",
-        "Cuanto tiempo queda antes de acabarse"
+        "Cuanto tiempo queda antes de acabarse",
+        "Cuando se acaba genoprazol",
+        "Cuanto dura este med",
+        "Cuando se termina tabcin",
+        "Predice cuando se acaba",
+        "En cuanto se agota",
+        "Cuantos dias quedan",
+        "Se va acabar pronto"
       ]
     }
   ]
