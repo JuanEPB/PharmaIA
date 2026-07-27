@@ -274,6 +274,101 @@ class AIOperationalRepository:
             cursor.close()
             connection.close()
 
+    def list_conversational_actions(
+        self,
+        limit: int = 50,
+    ) -> list[dict[str, Any]]:
+        connection = create_connection()
+        cursor = self._cursor(connection)
+
+        try:
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    sesion_id,
+                    usuario_id,
+                    farmacia_id,
+                    tipo_accion,
+                    estado,
+                    parametros,
+                    resultado,
+                    mensaje_error,
+                    creado_en,
+                    actualizado_en
+                FROM ia_acciones_conversacionales
+                ORDER BY id DESC
+                LIMIT %s
+                """,
+                (limit,),
+            )
+            rows = cursor.fetchall()
+
+            actions = [
+                self._row_to_dict(cursor, row)
+                for row in rows
+            ]
+
+            for action in actions:
+                action["parametros"] = from_json(
+                    action.get("parametros")
+                ) or {}
+                action["resultado"] = from_json(
+                    action.get("resultado")
+                ) or {}
+
+            return actions
+        finally:
+            cursor.close()
+            connection.close()
+
+    def list_inventory_predictions(
+        self,
+        limit: int = 50,
+    ) -> list[dict[str, Any]]:
+        connection = create_connection()
+        cursor = self._cursor(connection)
+
+        try:
+            cursor.execute(
+                """
+                SELECT
+                    p.id,
+                    p.medicamento_id,
+                    m.nombre AS medicamento_nombre,
+                    p.farmacia_id,
+                    p.tipo_prediccion,
+                    p.riesgo,
+                    p.valor_estimado,
+                    p.dias_estimados,
+                    p.confianza,
+                    p.detalles,
+                    p.creado_en
+                FROM ia_predicciones_inventario AS p
+                LEFT JOIN medicamentos AS m
+                    ON m.id = p.medicamento_id
+                ORDER BY p.id DESC
+                LIMIT %s
+                """,
+                (limit,),
+            )
+            rows = cursor.fetchall()
+
+            predictions = [
+                self._row_to_dict(cursor, row)
+                for row in rows
+            ]
+
+            for prediction in predictions:
+                prediction["detalles"] = from_json(
+                    prediction.get("detalles")
+                ) or {}
+
+            return predictions
+        finally:
+            cursor.close()
+            connection.close()
+
     @staticmethod
     def _map_learning_status(status: str) -> str:
         mapping = {
