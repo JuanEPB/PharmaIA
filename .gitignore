@@ -1,7 +1,10 @@
 .venv/
 __pycache__/
+**/__pycache__/
 *.pyc
 .pytest_cache/
 .pytest_tmp/
 tests/.tmp/
 training/learning_queue.jsonl
+backup_*/
+*_backup_*.py
