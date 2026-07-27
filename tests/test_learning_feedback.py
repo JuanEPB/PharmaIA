@@ -1,10 +1,21 @@
+from pathlib import Path
+
 from app.services.learning_feedback_service import LearningFeedbackService
 
 
-def test_capture_low_confidence_message(tmp_path) -> None:
-    queue_path = tmp_path / "learning_queue.jsonl"
+TEST_QUEUE_PATH = Path(__file__).resolve().parent / ".tmp" / "learning_queue.jsonl"
+
+
+def clean_queue() -> None:
+    if TEST_QUEUE_PATH.exists():
+        TEST_QUEUE_PATH.unlink()
+
+
+def test_capture_low_confidence_message() -> None:
+    clean_queue()
+
     service = LearningFeedbackService(
-        queue_path=queue_path,
+        queue_path=TEST_QUEUE_PATH,
         low_confidence_threshold=0.65,
     )
 
@@ -20,15 +31,18 @@ def test_capture_low_confidence_message(tmp_path) -> None:
     )
 
     assert captured
-    assert "que medicina se acaba primero" in queue_path.read_text(
+    assert "que medicina se acaba primero" in TEST_QUEUE_PATH.read_text(
         encoding="utf-8"
     )
 
+    clean_queue()
 
-def test_skip_high_confidence_message(tmp_path) -> None:
-    queue_path = tmp_path / "learning_queue.jsonl"
+
+def test_skip_high_confidence_message() -> None:
+    clean_queue()
+
     service = LearningFeedbackService(
-        queue_path=queue_path,
+        queue_path=TEST_QUEUE_PATH,
         low_confidence_threshold=0.65,
     )
 
@@ -41,4 +55,4 @@ def test_skip_high_confidence_message(tmp_path) -> None:
     )
 
     assert not captured
-    assert not queue_path.exists()
+    assert not TEST_QUEUE_PATH.exists()

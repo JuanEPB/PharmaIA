@@ -2,4 +2,6 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+.pytest_tmp/
+tests/.tmp/
 training/learning_queue.jsonl
