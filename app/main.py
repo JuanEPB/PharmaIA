@@ -8,6 +8,7 @@ from app.api.dashboard_routes import router as dashboard_router
 from app.api.depletion_routes import router as depletion_router
 from app.api.inventory_routes import router as inventory_router
 from app.api.learning_routes import router as learning_router
+from app.api.medicine_routes import router as medicine_router
 from app.api.movement_routes import router as movement_router
 from app.api.recommendation_routes import router as recommendation_router
 from app.api.report_routes import router as report_router
@@ -54,6 +55,9 @@ app.include_router(conversation_router)
 
 # Dashboard de inventario
 app.include_router(inventory_router)
+
+# Medicamentos compatibles con appMovil
+app.include_router(medicine_router)
 
 # Perfil operativo de la app e IA
 app.include_router(profile_router)

@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException, Query, Response, status
 from app.services.inventory_statistics_service import (
     inventory_statistics_service,
 )
+from app.services.inventory_service import inventory_service
 from app.services.stock_alert_report_service import (
     stock_alert_report_service,
 )
@@ -17,6 +18,25 @@ router = APIRouter(
     prefix="/inventario",
     tags=["Dashboard de inventario"],
 )
+
+
+@router.get(
+    "/medicamentos",
+    summary="Listar medicamentos desde la base pharmacontrol",
+)
+async def get_inventory_medicines() -> list[dict[str, Any]]:
+    try:
+        return inventory_service.obtener_todos()
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=(
+                "No fue posible obtener los medicamentos. "
+                f"Detalle: {exc}"
+            ),
+        ) from exc
+
 
 
 @router.get(
