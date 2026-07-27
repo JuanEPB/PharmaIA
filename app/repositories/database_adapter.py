@@ -16,6 +16,7 @@ def _try_project_connection() -> Any | None:
     """
 
     candidates = (
+        ("app.database.connection", "DatabaseConnection.connect"),
         ("app.database.connection", "get_connection"),
         ("app.database.database", "get_connection"),
         ("app.database.db", "get_connection"),
@@ -27,10 +28,19 @@ def _try_project_connection() -> Any | None:
     for module_name, function_name in candidates:
         try:
             module = importlib.import_module(module_name)
-            function = getattr(module, function_name, None)
+            function: Any = module
+
+            for attribute in function_name.split("."):
+                function = getattr(function, attribute, None)
+
+                if function is None:
+                    break
 
             if callable(function):
-                return function()
+                connection = function()
+
+                if hasattr(connection, "cursor"):
+                    return connection
 
         except (ImportError, AttributeError):
             continue
