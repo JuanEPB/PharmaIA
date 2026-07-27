@@ -7,6 +7,8 @@ import unicodedata
 from collections import Counter
 from pathlib import Path
 
+print("Cargando motor de entrenamiento IA. Esto puede tardar unos segundos...")
+
 import torch
 import torch.nn as nn
 from sklearn.preprocessing import LabelEncoder
@@ -330,6 +332,11 @@ def leer_argumentos():
         default=EPOCHS,
         help=f"Cantidad de épocas de entrenamiento. Por defecto: {EPOCHS}.",
     )
+    parser.add_argument(
+        "--validar-datos",
+        action="store_true",
+        help="Valida intents.json y muestra conteos sin entrenar.",
+    )
 
     return parser.parse_args()
 
@@ -338,9 +345,14 @@ if __name__ == "__main__":
     argumentos = leer_argumentos()
 
     try:
-        entrenar(epochs=argumentos.epochs)
+        if argumentos.validar_datos:
+            frases, etiquetas = cargar_intenciones()
+            print(f"Frases encontradas: {len(frases)}")
+            print(f"Intenciones encontradas: {len(set(etiquetas))}")
+        else:
+            entrenar(epochs=argumentos.epochs)
     except KeyboardInterrupt:
         print(
             "\nEntrenamiento cancelado por el usuario. "
-            "Vuelve a ejecutar el comando sin cerrar la terminal."
+            "Si se quedó en import torch, espera unos segundos más antes de cancelar."
         )
