@@ -1,6 +1,7 @@
 ﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.anomaly_routes import router as anomaly_router
 from app.api.conversation_routes import router as conversation_router
 from app.api.dashboard_routes import router as dashboard_router
 from app.api.depletion_routes import router as depletion_router
@@ -49,6 +50,9 @@ app.include_router(dashboard_router)
 
 # Movimientos de inventario
 app.include_router(movement_router)
+
+# Detección de anomalías
+app.include_router(anomaly_router)
 
 # Predicción de agotamiento
 app.include_router(depletion_router)
