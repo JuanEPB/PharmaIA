@@ -18,6 +18,24 @@
     "buscar_medicamento": (
         "Entendí que deseas buscar un medicamento."
     ),
+    "consultar_inventario": (
+        "Entendí que deseas consultar el inventario."
+    ),
+    "resumen_inventario": (
+        "Entendí que deseas revisar el resumen del inventario."
+    ),
+    "buscar_por_categoria": (
+        "Entendí que deseas buscar medicamentos por categoría."
+    ),
+    "buscar_por_proveedor": (
+        "Entendí que deseas buscar medicamentos por proveedor."
+    ),
+    "planear_compras": (
+        "Entendí que deseas generar una sugerencia de compras."
+    ),
+    "predecir_agotamiento": (
+        "Entendí que deseas predecir el agotamiento de un medicamento."
+    ),
     "desconocido": (
         "No pude identificar claramente tu solicitud. "
         "Puedes preguntarme sobre stock, medicamentos agotados, "

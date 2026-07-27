@@ -4,40 +4,68 @@
       "tag": "saludo",
       "patterns": [
         "Hola",
-        "Buenos días",
+        "Buenos dias",
         "Buenas tardes",
-        "Qué tal",
-        "Hola asistente"
+        "Buenas noches",
+        "Que tal",
+        "Hola asistente",
+        "Hola pharma",
+        "Necesito ayuda",
+        "Me puedes ayudar",
+        "Iniciar consulta"
       ]
     },
     {
       "tag": "consultar_bajo_stock",
       "patterns": [
-        "Qué medicamentos tienen poco stock",
-        "Muéstrame los productos con bajo inventario",
-        "Cuáles medicamentos se están terminando",
+        "Que medicamentos tienen poco stock",
+        "Muestrame los productos con bajo inventario",
+        "Cuales medicamentos se estan terminando",
         "Productos con existencia baja",
-        "Medicamentos con pocas unidades"
+        "Medicamentos con pocas unidades",
+        "Que productos necesito reponer",
+        "Que medicinas tienen bajo stock",
+        "Cuales se estan acabando",
+        "Muestrame medicamentos con poco inventario",
+        "Hay medicinas por agotarse",
+        "Lista de productos con stock bajo",
+        "Que debo revisar por baja existencia",
+        "Medicamentos por debajo del minimo",
+        "Productos que estan casi agotados"
       ]
     },
     {
       "tag": "consultar_agotados",
       "patterns": [
-        "Qué medicamentos están agotados",
-        "Muéstrame productos sin existencia",
-        "Cuáles tienen stock cero",
+        "Que medicamentos estan agotados",
+        "Muestrame productos sin existencia",
+        "Cuales tienen stock cero",
         "Medicamentos agotados",
-        "Productos sin unidades"
+        "Productos sin unidades",
+        "Que medicinas ya no tienen stock",
+        "Lista de productos agotados",
+        "Que articulos estan en cero",
+        "Muestrame medicamentos sin stock",
+        "Hay productos agotados",
+        "Cuales medicamentos ya se acabaron",
+        "Productos que no tienen existencia"
       ]
     },
     {
       "tag": "consultar_caducidades",
       "patterns": [
-        "Qué medicamentos están por caducar",
-        "Muéstrame próximas caducidades",
+        "Que medicamentos estan por caducar",
+        "Muestrame proximas caducidades",
         "Productos que vencen pronto",
-        "Medicamentos próximos a vencer",
-        "Qué productos caducan este mes"
+        "Medicamentos proximos a vencer",
+        "Que productos caducan este mes",
+        "Que medicinas vencen esta semana",
+        "Muestrame medicamentos por vencer",
+        "Cuales caducan pronto",
+        "Lista de productos proximos a caducar",
+        "Medicamentos con fecha de caducidad cercana",
+        "Que productos debo sacar por caducidad",
+        "Revisa caducidades proximas"
       ]
     },
     {
@@ -46,8 +74,101 @@
         "Busca paracetamol",
         "Encuentra un medicamento",
         "Quiero consultar un producto",
-        "Muéstrame información de un medicamento",
-        "Buscar medicamento por nombre"
+        "Muestrame informacion de un medicamento",
+        "Buscar medicamento por nombre",
+        "Consulta ibuprofeno",
+        "Dame datos de amoxicilina",
+        "Quiero ver un medicamento",
+        "Busca informacion del producto",
+        "Encuentra datos de una medicina",
+        "Muestrame el producto paracetamol",
+        "Revisa si existe este medicamento"
+      ]
+    },
+    {
+      "tag": "consultar_inventario",
+      "patterns": [
+        "Muestrame todo el inventario",
+        "Ver inventario completo",
+        "Lista de medicamentos",
+        "Todos los medicamentos",
+        "Mostrar inventario",
+        "Inventario detallado",
+        "Que hay en inventario",
+        "Dame el listado de productos",
+        "Quiero ver todos los productos",
+        "Consulta general del inventario"
+      ]
+    },
+    {
+      "tag": "resumen_inventario",
+      "patterns": [
+        "Dame un resumen del inventario",
+        "Estado del inventario",
+        "Estadisticas del inventario",
+        "Analiza el inventario",
+        "Revisa el inventario",
+        "Como esta el inventario",
+        "Resumen general de medicamentos",
+        "Dime como va el stock",
+        "Reporte rapido del inventario",
+        "Panorama general del inventario"
+      ]
+    },
+    {
+      "tag": "buscar_por_categoria",
+      "patterns": [
+        "Muestrame medicamentos por categoria",
+        "Busca productos de la categoria analgesicos",
+        "Que hay en categoria antibioticos",
+        "Medicamentos de una categoria",
+        "Consulta la categoria vitaminas",
+        "Productos por categoria",
+        "Ver medicamentos agrupados por categoria",
+        "Busca por categoria"
+      ]
+    },
+    {
+      "tag": "buscar_por_proveedor",
+      "patterns": [
+        "Muestrame medicamentos por proveedor",
+        "Busca productos del proveedor",
+        "Que medicamentos vende este proveedor",
+        "Consulta proveedor farmaceutico",
+        "Productos de un proveedor",
+        "Ver inventario por proveedor",
+        "Busca por proveedor",
+        "Que hay del proveedor"
+      ]
+    },
+    {
+      "tag": "planear_compras",
+      "patterns": [
+        "Que debo comprar",
+        "Que compro esta semana",
+        "Genera sugerencia de compras",
+        "Planea las compras",
+        "Necesito ordenes de compra",
+        "Que medicamentos debo reponer",
+        "Recomiendame compras",
+        "Analiza que productos comprar",
+        "Haz un plan de compras",
+        "Prepara compras para productos criticos"
+      ]
+    },
+    {
+      "tag": "predecir_agotamiento",
+      "patterns": [
+        "Cuando se agotara paracetamol",
+        "Cuando se acaba este medicamento",
+        "Predice el agotamiento de un producto",
+        "Calcula cuando se termina",
+        "Cuantos dias quedan de stock",
+        "Cuanto dura el inventario de este medicamento",
+        "Fecha probable de agotamiento",
+        "Que medicamento se acaba primero",
+        "Estima el agotamiento",
+        "Cuanto tiempo queda antes de acabarse"
       ]
     }
   ]

@@ -13,7 +13,7 @@ from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import DataLoader, Dataset
 
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parents[1]
 INTENTS_PATH = BASE_DIR / "training" / "intents.json"
 MODEL_DIR = BASE_DIR / "model"
 

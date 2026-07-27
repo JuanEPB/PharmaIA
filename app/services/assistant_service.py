@@ -5,7 +5,11 @@ from decimal import Decimal
 from typing import Any
 
 from app.ai.predictor import predictor
+from app.services.learning_feedback_service import (
+    learning_feedback_service,
+)
 from app.services.inventory_service import inventory_service
+from app.services.purchase_planner_service import purchase_planner_service
 from app.utils.responses import obtener_respuesta
 
 
@@ -42,6 +46,10 @@ class AssistantService:
                 )
 
             prediccion = predictor.predict(mensaje)
+            learning_feedback_service.capture_if_needed(
+                message=mensaje,
+                prediction=prediccion,
+            )
 
             intencion = prediccion.get(
                 "intencion",
@@ -78,6 +86,17 @@ class AssistantService:
                     prediccion,
                 )
 
+            if intencion == "consultar_caducidades":
+                return self._consultar_por_caducar(
+                    mensaje,
+                    self._extraer_dias(mensaje),
+                )
+
+            if intencion == "resumen_inventario":
+                return self._consultar_resumen(
+                    mensaje
+                )
+
             if intencion in {
                 "consultar_inventario",
                 "listar_medicamentos",
@@ -101,6 +120,59 @@ class AssistantService:
                     confianza,
                     porcentaje,
                     prediccion,
+                )
+
+            if intencion == "buscar_por_categoria":
+                categoria = self._extraer_categoria(mensaje)
+
+                return self._buscar_por_categoria(
+                    mensaje,
+                    categoria,
+                )
+
+            if intencion == "buscar_por_proveedor":
+                proveedor = self._extraer_proveedor(mensaje)
+
+                return self._buscar_por_proveedor(
+                    mensaje,
+                    proveedor,
+                )
+
+            if intencion == "planear_compras":
+                suggestion = (
+                    purchase_planner_service
+                    .generar_sugerencia_automatica(
+                        "sesion-general"
+                    )
+                )
+
+                if suggestion is not None:
+                    return self._respuesta(
+                        respuesta=suggestion["respuesta"],
+                        mensaje=mensaje,
+                        intencion="planear_compras",
+                        confianza=confianza,
+                        porcentaje=porcentaje,
+                        datos=[suggestion],
+                        predicciones=self._predicciones(
+                            prediccion
+                        ),
+                    )
+
+            if intencion == "predecir_agotamiento":
+                return self._respuesta(
+                    respuesta=(
+                        "Indícame el nombre del medicamento con "
+                        "una frase como: cuando se agotará "
+                        "Paracetamol."
+                    ),
+                    mensaje=mensaje,
+                    intencion=intencion,
+                    confianza=confianza,
+                    porcentaje=porcentaje,
+                    predicciones=self._predicciones(
+                        prediccion
+                    ),
                 )
 
             return self._respuesta(

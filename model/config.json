@@ -4,9 +4,15 @@
     "hidden_dim": 64,
     "clases": [
         "buscar_medicamento",
+        "buscar_por_categoria",
+        "buscar_por_proveedor",
         "consultar_agotados",
         "consultar_bajo_stock",
         "consultar_caducidades",
+        "consultar_inventario",
+        "planear_compras",
+        "predecir_agotamiento",
+        "resumen_inventario",
         "saludo"
     ]
 }
