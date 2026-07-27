@@ -15,6 +15,7 @@ class FakeAIRepository:
         self.memory: dict[str, dict] = {}
         self.saved_events: list[dict] = []
         self.updated_statuses: list[tuple[str, str]] = []
+        self.saved_actions: list[dict] = []
 
     def get_conversation_memory(self, session_id: str) -> dict:
         return self.memory.get(session_id, {})
@@ -38,6 +39,9 @@ class FakeAIRepository:
         status: str,
     ) -> None:
         self.updated_statuses.append((event_id, status))
+
+    def save_conversational_action(self, **kwargs) -> None:
+        self.saved_actions.append(kwargs)
 
 
 def test_conversation_memory_persists_updates(monkeypatch) -> None:

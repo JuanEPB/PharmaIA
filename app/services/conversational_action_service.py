@@ -9,6 +9,9 @@ from typing import Any
 from app.repositories.conversational_action_repository import (
     conversational_action_repository,
 )
+from app.repositories.ai_operational_repository import (
+    ai_operational_repository,
+)
 from app.services.conversation_memory import conversation_memory
 from app.services.inventory_movement_service import (
     inventory_movement_service,
@@ -325,6 +328,12 @@ class ConversationalActionService:
             accion_pendiente=action,
         )
 
+        self._persist_action(
+            session_id=session_id,
+            action=action,
+            status="PENDIENTE",
+        )
+
         return self._build_confirmation(action)
 
     def _execute_pending_action(
@@ -358,6 +367,16 @@ class ConversationalActionService:
 
             movement = result.get("movimiento", {})
 
+            serialized_result = self.serialize(result)
+
+            self._persist_action(
+                session_id=session_id,
+                action=pending,
+                status="EJECUTADA",
+                result=serialized_result,
+                usuario_id=usuario_id,
+            )
+
             return {
                 "accion_detectada": True,
                 "requiere_confirmacion": False,
@@ -368,7 +387,7 @@ class ConversationalActionService:
                     f"{movement.get('stock_anterior')} → "
                     f"{movement.get('stock_nuevo')} unidades."
                 ),
-                "resultado": self.serialize(result),
+                "resultado": serialized_result,
             }
 
         if action_type == "GENERAR_ORDEN_CRITICOS":
@@ -392,6 +411,21 @@ class ConversationalActionService:
                 for order in orders
             )
 
+            serialized_orders = self.serialize(orders)
+            result = {
+                "total_ordenes": len(orders),
+                "total_estimado": round(total, 2),
+                "ordenes": serialized_orders,
+            }
+
+            self._persist_action(
+                session_id=session_id,
+                action=pending,
+                status="EJECUTADA",
+                result=result,
+                usuario_id=usuario_id,
+            )
+
             return {
                 "accion_detectada": True,
                 "requiere_confirmacion": False,
@@ -401,11 +435,7 @@ class ConversationalActionService:
                     f"en estado BORRADOR por un total estimado de "
                     f"${total:,.2f}."
                 ),
-                "resultado": {
-                    "total_ordenes": len(orders),
-                    "total_estimado": round(total, 2),
-                    "ordenes": self.serialize(orders),
-                },
+                "resultado": result,
             }
 
         raise ValueError(
@@ -443,6 +473,13 @@ class ConversationalActionService:
                     accion_pendiente={},
                 )
 
+                self._persist_action(
+                    session_id=clean_session_id,
+                    action=pending,
+                    status="CANCELADA",
+                    usuario_id=usuario_id,
+                )
+
                 return {
                     "accion_detectada": True,
                     "requiere_confirmacion": False,
@@ -464,6 +501,27 @@ class ConversationalActionService:
             action=action,
             session_id=clean_session_id,
         )
+
+    def _persist_action(
+        self,
+        *,
+        session_id: str,
+        action: dict[str, Any],
+        status: str,
+        result: dict[str, Any] | None = None,
+        usuario_id: int | None = None,
+    ) -> None:
+        try:
+            ai_operational_repository.save_conversational_action(
+                session_id=session_id,
+                action_type=str(action.get("tipo_accion") or "DESCONOCIDA"),
+                status=status,
+                parameters=self.serialize(action),
+                result=result,
+                user_id=usuario_id,
+            )
+        except Exception:
+            pass
 
 
 conversational_action_service = ConversationalActionService()

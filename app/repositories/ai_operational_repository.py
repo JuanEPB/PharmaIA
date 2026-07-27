@@ -228,6 +228,52 @@ class AIOperationalRepository:
             cursor.close()
             connection.close()
 
+    def save_conversational_action(
+        self,
+        *,
+        session_id: str,
+        action_type: str,
+        status: str,
+        parameters: dict[str, Any] | None = None,
+        result: dict[str, Any] | None = None,
+        user_id: int | None = None,
+        error_message: str | None = None,
+    ) -> None:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        try:
+            cursor.execute(
+                """
+                INSERT INTO ia_acciones_conversacionales (
+                    sesion_id,
+                    usuario_id,
+                    tipo_accion,
+                    estado,
+                    parametros,
+                    resultado,
+                    mensaje_error
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    session_id,
+                    user_id,
+                    action_type,
+                    status,
+                    to_json(parameters or {}),
+                    to_json(result or {}),
+                    error_message,
+                ),
+            )
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            cursor.close()
+            connection.close()
+
     @staticmethod
     def _map_learning_status(status: str) -> str:
         mapping = {
