@@ -7,7 +7,7 @@ from app.repositories.sales_repository import sales_repository
 from app.services.stock_alert_report_service import (
     stock_alert_report_service,
 )
-from app.utils.pdf import build_simple_pdf
+from app.utils.pdf import build_simple_pdf, build_ticket_pdf
 
 
 class PdfExportService:
@@ -27,41 +27,38 @@ class PdfExportService:
             raise ValueError("La venta indicada no existe.")
 
         details = sales_repository.obtener_detalle_venta(venta_id)
-        lines = [
-            f"Venta #{sale.get('id')}",
-            f"Fecha: {sale.get('fecha')}",
-            f"Farmacia: {sale.get('farmacia_nombre') or 'Sin farmacia'}",
-            f"Usuario: {sale.get('usuario_nombre') or 'Sin usuario'} "
-            f"{sale.get('usuario_apellido') or ''}".strip(),
-            "",
-            "Detalle:",
-        ]
 
-        if not details:
-            lines.append("Sin productos registrados.")
-
+        ticket_items = []
         for item in details:
             quantity = int(item.get("cantidad") or 0)
             price = float(item.get("precio_unitario") or 0)
             subtotal = quantity * price
-            lines.append(
-                f"- {item.get('medicamento_nombre') or 'Medicamento'} "
-                f"x {quantity} | {self._money(price)} | "
-                f"{self._money(subtotal)}"
+            ticket_items.append(
+                {
+                    "name": item.get("medicamento_nombre")
+                    or "Medicamento",
+                    "quantity": quantity,
+                    "unit_price": self._money(price),
+                    "subtotal": self._money(subtotal),
+                }
             )
 
-        lines.extend(
-            [
-                "",
-                f"Total: {self._money(sale.get('total'))}",
-                "",
-                "Gracias por su compra.",
-            ]
-        )
+        customer_name = (
+            f"{sale.get('usuario_nombre') or 'Cliente'} "
+            f"{sale.get('usuario_apellido') or ''}"
+        ).strip()
 
-        return build_simple_pdf(
-            title="Ticket de venta",
-            lines=lines,
+        return build_ticket_pdf(
+            title=sale.get("farmacia_nombre") or "PharmaControl",
+            subtitle="Comprobante profesional de venta",
+            folio=sale.get("id"),
+            date_text=sale.get("fecha") or "",
+            business_name=sale.get("farmacia_nombre")
+            or "Sin farmacia",
+            customer_name=customer_name,
+            items=ticket_items,
+            total=self._money(sale.get("total")),
+            footer="Gracias por su compra.",
         )
 
     def generar_reporte_bajo_stock_pdf(
