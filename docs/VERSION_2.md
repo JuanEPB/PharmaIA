@@ -48,6 +48,7 @@ Esta etapa consolida las funciones ya creadas, actualiza la documentacion y deja
 - La documentacion describe las capacidades actuales.
 - `.env.example` contiene las variables necesarias para ejecutar el proyecto.
 - El README apunta a esta hoja de ruta.
+- Las migraciones SQL se pueden aplicar con `.\aplicar-migraciones.ps1`.
 
 ## Proxima fase sugerida
 

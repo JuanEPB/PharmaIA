@@ -186,3 +186,15 @@ Agregar reglas para evitar datos invalidos:
 6. Aplicar migraciones V2 faltantes.
 7. Agregar indices de busqueda y reportes.
 8. Preparar una migracion SQL formal para estos cambios.
+
+## Migraciones agregadas
+
+- `005_harden_inventory_schema.sql`: agrega `stock_minimo`, `farmacia_id`, precio decimal e indices para inventario, ventas y pedidos.
+- `006_create_ai_operational_tables.sql`: agrega tablas persistentes para memoria conversacional, acciones IA, feedback de aprendizaje y predicciones.
+- `007_clean_seed_data_quality.sql`: corrige datos vacios o invalidos que afectan a la app y a la IA.
+
+Para aplicarlas:
+
+```powershell
+.\aplicar-migraciones.ps1
+```

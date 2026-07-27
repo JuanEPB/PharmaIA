@@ -114,6 +114,12 @@ Run the application:
 uvicorn app.main:app --reload
 ```
 
+Apply database migrations:
+
+```bash
+.\aplicar-migraciones.ps1
+```
+
 ## API Documentation
 
 After starting the server:
