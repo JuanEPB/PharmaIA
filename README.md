@@ -126,6 +126,7 @@ After starting the server:
 
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
+- App/AI profile: `http://localhost:8000/perfil`
 
 ## Example Requests
 

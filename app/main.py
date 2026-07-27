@@ -11,6 +11,7 @@ from app.api.learning_routes import router as learning_router
 from app.api.movement_routes import router as movement_router
 from app.api.recommendation_routes import router as recommendation_router
 from app.api.report_routes import router as report_router
+from app.api.profile_routes import router as profile_router
 from app.api.vision_routes import router as vision_router
 from app.api.voice_routes import router as voice_router
 from app.config.settings import settings
@@ -52,6 +53,9 @@ app.include_router(conversation_router)
 
 # Dashboard de inventario
 app.include_router(inventory_router)
+
+# Perfil operativo de la app e IA
+app.include_router(profile_router)
 
 # Dashboard predictivo
 app.include_router(dashboard_router)

@@ -49,6 +49,17 @@ Esta etapa consolida las funciones ya creadas, actualiza la documentacion y deja
 - `.env.example` contiene las variables necesarias para ejecutar el proyecto.
 - El README apunta a esta hoja de ruta.
 - Las migraciones SQL se pueden aplicar con `.\aplicar-migraciones.ps1`.
+- El perfil operativo de app e IA esta disponible en `/perfil`.
+
+## Perfil operativo
+
+La ruta `/perfil` resume lo que la app y la IA pueden usar:
+
+- empresa y farmacia activa;
+- modulos disponibles;
+- metricas de inventario;
+- memoria, feedback, acciones y predicciones IA;
+- pendientes principales de V2.
 
 ## Proxima fase sugerida
 
