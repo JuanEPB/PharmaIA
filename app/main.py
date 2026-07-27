@@ -8,6 +8,7 @@ from app.api.depletion_routes import router as depletion_router
 from app.api.inventory_routes import router as inventory_router
 from app.api.movement_routes import router as movement_router
 from app.api.recommendation_routes import router as recommendation_router
+from app.api.report_routes import router as report_router
 from app.routes import router as assistant_router
 
 
@@ -57,6 +58,9 @@ app.include_router(anomaly_router)
 
 # Recomendaciones automáticas
 app.include_router(recommendation_router)
+
+# Reportes IA
+app.include_router(report_router)
 
 # Predicción de agotamiento
 app.include_router(depletion_router)
