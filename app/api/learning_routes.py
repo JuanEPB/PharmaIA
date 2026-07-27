@@ -25,6 +25,10 @@ class UserFeedbackRequest(BaseModel):
     correccion: str | None = Field(default=None, max_length=1000)
 
 
+class LearningReviewRequest(BaseModel):
+    estado: str = Field(..., min_length=1, max_length=50)
+
+
 @router.post(
     "/feedback",
     summary="Registrar feedback del usuario para aprendizaje",
@@ -49,6 +53,51 @@ async def register_learning_feedback(
                 "Gracias. Usaré esta señal para mejorar futuras "
                 "respuestas."
             ),
+        }
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+
+@router.get(
+    "/eventos",
+    summary="Listar eventos de aprendizaje pendientes o revisados",
+)
+async def list_learning_events(
+    estado: str | None = None,
+    limite: int = 100,
+) -> dict[str, Any]:
+    events = learning_feedback_service.list_events(
+        status=estado,
+        limit=limite,
+    )
+
+    return {
+        "total": len(events),
+        "eventos": events,
+    }
+
+
+@router.patch(
+    "/eventos/{event_id}",
+    summary="Aprobar o rechazar un evento de aprendizaje",
+)
+async def review_learning_event(
+    event_id: str,
+    request: LearningReviewRequest,
+) -> dict[str, Any]:
+    try:
+        event = learning_feedback_service.update_event_status(
+            event_id=event_id,
+            status=request.estado,
+        )
+
+        return {
+            "actualizado": True,
+            "evento": event,
         }
 
     except ValueError as exc:

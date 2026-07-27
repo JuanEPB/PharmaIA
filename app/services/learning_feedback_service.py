@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -59,6 +60,7 @@ class LearningFeedbackService:
         )
 
         event = {
+            "id": str(uuid.uuid4()),
             "timestamp": datetime.now(
                 timezone.utc
             ).isoformat(),
@@ -112,6 +114,7 @@ class LearningFeedbackService:
         )
 
         event = {
+            "id": str(uuid.uuid4()),
             "timestamp": datetime.now(
                 timezone.utc
             ).isoformat(),
@@ -146,6 +149,87 @@ class LearningFeedbackService:
             )
 
         return event
+
+    def list_events(
+        self,
+        status: str | None = None,
+        limit: int = 100,
+    ) -> list[dict[str, Any]]:
+        if not self.queue_path.exists():
+            return []
+
+        events: list[dict[str, Any]] = []
+
+        with self.queue_path.open("r", encoding="utf-8") as file:
+            for index, line in enumerate(file):
+                try:
+                    event = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+
+                event.setdefault("id", f"legacy-{index}")
+
+                if status and event.get("estado") != status:
+                    continue
+
+                events.append(event)
+
+        events.sort(
+            key=lambda item: str(item.get("timestamp") or ""),
+            reverse=True,
+        )
+
+        return events[: max(1, min(limit, 500))]
+
+    def update_event_status(
+        self,
+        event_id: str,
+        status: str,
+    ) -> dict[str, Any]:
+        if status not in {
+            "pendiente_revision",
+            "aprobado_para_entrenamiento",
+            "rechazado",
+        }:
+            raise ValueError("Estado de aprendizaje inválido.")
+
+        if not self.queue_path.exists():
+            raise ValueError("No hay eventos de aprendizaje registrados.")
+
+        updated_event: dict[str, Any] | None = None
+        events: list[dict[str, Any]] = []
+
+        with self.queue_path.open("r", encoding="utf-8") as file:
+            for index, line in enumerate(file):
+                try:
+                    event = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+
+                event.setdefault("id", f"legacy-{index}")
+
+                if event.get("id") == event_id:
+                    event["estado"] = status
+                    event["revisado_en"] = datetime.now(
+                        timezone.utc
+                    ).isoformat()
+                    updated_event = event
+
+                events.append(event)
+
+        if updated_event is None:
+            raise ValueError("No encontré el evento de aprendizaje.")
+
+        self.queue_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with self.queue_path.open("w", encoding="utf-8") as file:
+            for event in events:
+                file.write(
+                    json.dumps(event, ensure_ascii=False)
+                    + "\n"
+                )
+
+        return updated_event
 
 
 learning_feedback_service = LearningFeedbackService()

@@ -83,3 +83,35 @@ def test_capture_user_feedback() -> None:
     assert "Debe mostrar cantidades" in content
 
     clean_queue()
+
+
+def test_review_learning_events() -> None:
+    clean_queue()
+
+    service = LearningFeedbackService(
+        queue_path=TEST_QUEUE_PATH,
+    )
+
+    event = service.capture_user_feedback(
+        message="GENOPRAZOL 20 MG CAP",
+        response="No encontré el medicamento.",
+        helpful=False,
+        session_id="sesion-test",
+        intent="buscar_medicamento",
+    )
+
+    pending = service.list_events(
+        status="pendiente_revision"
+    )
+
+    assert pending[0]["id"] == event["id"]
+
+    updated = service.update_event_status(
+        event["id"],
+        "aprobado_para_entrenamiento",
+    )
+
+    assert updated["estado"] == "aprobado_para_entrenamiento"
+    assert service.list_events(status="pendiente_revision") == []
+
+    clean_queue()
