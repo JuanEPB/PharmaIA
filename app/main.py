@@ -13,6 +13,7 @@ from app.api.recommendation_routes import router as recommendation_router
 from app.api.report_routes import router as report_router
 from app.api.vision_routes import router as vision_router
 from app.api.voice_routes import router as voice_router
+from app.config.settings import settings
 from app.routes import router as assistant_router
 
 
@@ -27,7 +28,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.CORS_ALLOW_ORIGINS,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
