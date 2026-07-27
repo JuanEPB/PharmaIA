@@ -11,6 +11,7 @@ from app.schemas import (
     DeleteContextResponse,
 )
 from app.services.conversation_service import conversation_service
+from app.services.conversation_memory import conversation_memory
 from app.services.conversational_action_service import (
     conversational_action_service,
 )
@@ -73,6 +74,57 @@ def build_welcome_response(
     }
 
 
+def _normalize_chat_message(
+    message: str,
+) -> str:
+    return message.strip().lower()
+
+
+def _is_purchase_confirmation(
+    message: str,
+) -> bool:
+    normalized = _normalize_chat_message(message)
+
+    return normalized in {
+        "si",
+        "sí",
+        "ok",
+        "dale",
+        "hazlo",
+        "confirmar",
+        "confirmo",
+        "acepto",
+        "adelante",
+        "si hazlo",
+        "sí hazlo",
+        "si confirmar",
+        "sí confirmar",
+    }
+
+
+def _is_cancel_message(
+    message: str,
+) -> bool:
+    normalized = _normalize_chat_message(message)
+
+    return normalized in {
+        "no",
+        "cancelar",
+        "cancela",
+        "detener",
+        "mejor no",
+    }
+
+
+def _pending_purchase_plan(
+    session_id: str,
+) -> bool:
+    context = conversation_memory.get(session_id)
+    pending = context.get("accion_pendiente") or {}
+
+    return pending.get("tipo_accion") == "CONFIRMAR_PLAN_COMPRA"
+
+
 @router.post(
     "/chat",
     summary="Consultar o ejecutar acciones con el asistente",
@@ -85,7 +137,9 @@ async def chat(
     request: ChatRequest,
 ) -> dict[str, Any]:
     try:
-        normalized_prediction_message = request.mensaje.strip().lower()
+        normalized_prediction_message = _normalize_chat_message(
+            request.mensaje
+        )
 
         greeting_triggers = {
             "hola",
@@ -139,6 +193,56 @@ async def chat(
                     },
                 }
 
+        if _pending_purchase_plan(request.sesion_id):
+            if _is_purchase_confirmation(request.mensaje):
+                execution = purchase_planner_service.ejecutar_plan(
+                    request.sesion_id,
+                    usuario_id=getattr(
+                        request,
+                        "usuario_id",
+                        None,
+                    ),
+                )
+
+                return {
+                    "respuesta": execution["respuesta"],
+                    "sesion_id": request.sesion_id,
+                    "memoria_utilizada": True,
+                    "contexto": {
+                        "tipo": "PLAN_COMPRA_CONFIRMADO",
+                        **execution,
+                    },
+                }
+
+            if _is_cancel_message(request.mensaje):
+                cancellation = purchase_planner_service.cancelar_plan(
+                    request.sesion_id
+                )
+
+                return {
+                    "respuesta": cancellation["respuesta"],
+                    "sesion_id": request.sesion_id,
+                    "memoria_utilizada": True,
+                    "contexto": {
+                        "tipo": "PLAN_COMPRA_CANCELADO",
+                        **cancellation,
+                    },
+                }
+
+            return {
+                "respuesta": (
+                    "Tengo un plan de compra pendiente. "
+                    "Responde «sí» o «confirmar» para generar "
+                    "la orden de compra, o «cancelar» para descartarlo."
+                ),
+                "sesion_id": request.sesion_id,
+                "memoria_utilizada": True,
+                "contexto": {
+                    "tipo": "PLAN_COMPRA_PENDIENTE",
+                    "requiere_confirmacion": True,
+                },
+            }
+
         action_result = conversational_action_service.process(
             message=request.mensaje,
             session_id=request.sesion_id,
@@ -157,12 +261,9 @@ async def chat(
                 "contexto": action_result,
             }
 
-        result = await conversation_service.chat(
-            message=request.mensaje,
-            session_id=request.sesion_id,
+        normalized_message = _normalize_chat_message(
+            request.mensaje
         )
-
-        normalized_message = request.mensaje.strip().lower()
 
         planning_triggers = {
             "analiza el inventario",
@@ -186,6 +287,11 @@ async def chat(
                     "memoria_utilizada": True,
                     "contexto": suggestion,
                 }
+
+        result = await conversation_service.chat(
+            message=request.mensaje,
+            session_id=request.sesion_id,
+        )
 
         return result
 
