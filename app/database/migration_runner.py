@@ -91,7 +91,7 @@ def run_pending_migrations(
                     continue
 
                 sql = migration_file.read_text(
-                    encoding="utf-8"
+                    encoding="utf-8-sig"
                 )
 
                 for statement in split_sql_statements(sql):

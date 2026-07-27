@@ -46,12 +46,9 @@ CREATE INDEX IF NOT EXISTS idx_medicamentos_farmacia_nombre
 CREATE INDEX IF NOT EXISTS idx_medicamentos_farmacia_caducidad
     ON medicamentos (farmacia_id, caducidad);
 
-ALTER TABLE medicamentos
-    ADD CONSTRAINT IF NOT EXISTS fk_medicamentos_farmacia
-    FOREIGN KEY (farmacia_id)
-    REFERENCES farmacia(id)
-    ON UPDATE CASCADE
-    ON DELETE SET NULL;
+ALTER TABLE venta
+    ADD COLUMN IF NOT EXISTS farmacia_id INT NULL
+    AFTER fecha;
 
 CREATE INDEX IF NOT EXISTS idx_venta_fecha
     ON venta (fecha);
