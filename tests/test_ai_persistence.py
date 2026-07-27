@@ -1,4 +1,5 @@
 import importlib
+from pathlib import Path
 
 from app.services.conversation_memory import ConversationMemory
 from app.services import learning_feedback_service as feedback_module
@@ -83,13 +84,20 @@ def test_conversation_memory_reads_database_fallback(monkeypatch) -> None:
 
 def test_default_learning_feedback_persists_to_database(
     monkeypatch,
-    tmp_path,
 ) -> None:
     fake_repository = FakeAIRepository()
+    queue_path = (
+        Path(__file__).resolve().parent
+        / ".tmp"
+        / "learning_queue_persistence.jsonl"
+    )
+    queue_path.parent.mkdir(parents=True, exist_ok=True)
+    queue_path.unlink(missing_ok=True)
+
     monkeypatch.setattr(
         feedback_module,
         "LEARNING_QUEUE_PATH",
-        tmp_path / "learning_queue.jsonl",
+        queue_path,
     )
     monkeypatch.setattr(
         feedback_module,
@@ -100,23 +108,27 @@ def test_default_learning_feedback_persists_to_database(
     service = LearningFeedbackService(
         queue_path=feedback_module.LEARNING_QUEUE_PATH,
     )
-    event = service.capture_user_feedback(
-        message="que compro",
-        response="compra X",
-        helpful=False,
-        session_id="sesion-db",
-        intent="planear_compras",
-    )
 
-    service.update_event_status(
-        event["id"],
-        "aprobado_para_entrenamiento",
-    )
+    try:
+        event = service.capture_user_feedback(
+            message="que compro",
+            response="compra X",
+            helpful=False,
+            session_id="sesion-db",
+            intent="planear_compras",
+        )
 
-    assert fake_repository.saved_events[0]["mensaje"] == "que compro"
-    assert fake_repository.updated_statuses == [
-        (
+        service.update_event_status(
             event["id"],
             "aprobado_para_entrenamiento",
         )
-    ]
+
+        assert fake_repository.saved_events[0]["mensaje"] == "que compro"
+        assert fake_repository.updated_statuses == [
+            (
+                event["id"],
+                "aprobado_para_entrenamiento",
+            )
+        ]
+    finally:
+        queue_path.unlink(missing_ok=True)
