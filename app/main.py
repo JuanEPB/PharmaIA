@@ -1,12 +1,11 @@
-﻿from app.api.depletion_routes import router as depletion_router
-from app.api.movement_routes import router as movement_router
-from app.api.inventory_routes import router as inventory_router
-from app.routes import router
-from app.api.conversation_routes import router as conversation_router
-from fastapi import FastAPI
+﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import router
+from app.api.conversation_routes import router as conversation_router
+from app.api.depletion_routes import router as depletion_router
+from app.api.inventory_routes import router as inventory_router
+from app.api.movement_routes import router as movement_router
+from app.routes import router as assistant_router
 
 
 app = FastAPI(
@@ -26,7 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router)
+app.include_router(assistant_router)
 
 
 @app.get("/")

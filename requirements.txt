@@ -4,3 +4,6 @@ torch
 numpy
 scikit-learn
 pydantic
+python-dotenv
+mysql-connector-python
+pytest

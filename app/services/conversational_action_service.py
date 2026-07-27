@@ -1,5 +1,4 @@
-﻿from app.services.purchase_planner_service import purchase_planner_service
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import re
 import unicodedata
@@ -14,6 +13,7 @@ from app.services.conversation_memory import conversation_memory
 from app.services.inventory_movement_service import (
     inventory_movement_service,
 )
+from app.services.purchase_planner_service import purchase_planner_service
 
 
 class ConversationalActionService:
@@ -51,11 +51,15 @@ class ConversationalActionService:
         text = str(value or "").strip().lower()
         text = unicodedata.normalize("NFD", text)
 
-        return "".join(
+        text = "".join(
             character
             for character in text
             if unicodedata.category(character) != "Mn"
         )
+        text = re.sub(r"[^a-z0-9ñ\s-]", " ", text)
+        text = re.sub(r"\s+", " ", text)
+
+        return text.strip()
 
     @classmethod
     def serialize(cls, value: Any) -> Any:

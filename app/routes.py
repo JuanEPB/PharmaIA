@@ -1,6 +1,4 @@
-﻿from app.services.depletion_prediction_service import depletion_prediction_service
-from app.services.purchase_planner_service import purchase_planner_service
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from typing import Any
 
@@ -16,6 +14,8 @@ from app.services.conversation_service import conversation_service
 from app.services.conversational_action_service import (
     conversational_action_service,
 )
+from app.services.depletion_prediction_service import depletion_prediction_service
+from app.services.purchase_planner_service import purchase_planner_service
 
 
 router = APIRouter(
