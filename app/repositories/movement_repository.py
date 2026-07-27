@@ -7,6 +7,20 @@ from app.repositories.database_adapter import create_connection
 
 class InventoryMovementRepository:
     @staticmethod
+    def _is_missing_table_error(error: Exception) -> bool:
+        errno = getattr(error, "errno", None)
+        message = str(error).lower()
+
+        return errno == 1146 or (
+            "movimientos_inventario" in message
+            and (
+                "doesn't exist" in message
+                or "does not exist" in message
+                or "no such table" in message
+            )
+        )
+
+    @staticmethod
     def _dictionary_cursor(connection: Any) -> Any:
         try:
             return connection.cursor(dictionary=True)
@@ -167,6 +181,10 @@ class InventoryMovementRepository:
         try:
             cursor.execute(query, tuple(parameters))
             return [self._row_to_dict(cursor, row) for row in cursor.fetchall()]
+        except Exception as exc:
+            if self._is_missing_table_error(exc):
+                return []
+            raise
         finally:
             cursor.close()
             connection.close()
@@ -189,6 +207,10 @@ class InventoryMovementRepository:
                 (medicamento_id,),
             )
             return self._row_to_dict(cursor, cursor.fetchone())
+        except Exception as exc:
+            if self._is_missing_table_error(exc):
+                return {}
+            raise
         finally:
             cursor.close()
             connection.close()

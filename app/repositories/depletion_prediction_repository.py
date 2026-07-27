@@ -7,6 +7,20 @@ from app.repositories.database_adapter import create_connection
 
 class DepletionPredictionRepository:
     @staticmethod
+    def _is_missing_table_error(error: Exception) -> bool:
+        errno = getattr(error, "errno", None)
+        message = str(error).lower()
+
+        return errno == 1146 or (
+            "movimientos_inventario" in message
+            and (
+                "doesn't exist" in message
+                or "does not exist" in message
+                or "no such table" in message
+            )
+        )
+
+    @staticmethod
     def _cursor(connection: Any) -> Any:
         try:
             return connection.cursor(dictionary=True)
@@ -211,6 +225,16 @@ class DepletionPredictionRepository:
 
             row = cursor.fetchone()
             return self._row_to_dict(cursor, row)
+        except Exception as exc:
+            if self._is_missing_table_error(exc):
+                return {
+                    "unidades_consumidas": 0,
+                    "total_movimientos": 0,
+                    "dias_con_movimiento": 0,
+                    "primer_movimiento": None,
+                    "ultimo_movimiento": None,
+                }
+            raise
 
         finally:
             cursor.close()
@@ -265,6 +289,10 @@ class DepletionPredictionRepository:
                 self._row_to_dict(cursor, row)
                 for row in rows
             ]
+        except Exception as exc:
+            if self._is_missing_table_error(exc):
+                return []
+            raise
 
         finally:
             cursor.close()
