@@ -17,6 +17,7 @@ from app.api.sales_routes import router as sales_router
 from app.api.vision_routes import router as vision_router
 from app.api.voice_routes import router as voice_router
 from app.config.settings import settings
+from app.middleware.auth import ApiKeyAuthMiddleware
 from app.routes import router as assistant_router
 
 
@@ -36,6 +37,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(ApiKeyAuthMiddleware)
 
 app.include_router(assistant_router)
 

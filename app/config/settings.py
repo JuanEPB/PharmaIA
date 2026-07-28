@@ -55,5 +55,34 @@ class Settings:
         if origin.strip()
     ]
 
+    ENVIRONMENT = os.getenv(
+        "ENVIRONMENT",
+        "development",
+    ).strip().lower()
+
+    API_KEYS = {
+        api_key.strip()
+        for api_key in os.getenv(
+            "API_KEYS",
+            "",
+        ).split(",")
+        if api_key.strip()
+    }
+
+    PUBLIC_PATHS = {
+        "/",
+        "/health",
+        "/docs",
+        "/redoc",
+        "/openapi.json",
+    }
+
+    @property
+    def AUTH_ENABLED(self) -> bool:
+        return self.ENVIRONMENT in {
+            "production",
+            "prod",
+        } or bool(self.API_KEYS)
+
 
 settings = Settings()

@@ -1,0 +1,13 @@
+.git
+.venv
+__pycache__
+**/__pycache__
+*.pyc
+.pytest_cache
+.pytest_tmp
+tests/.tmp
+backup_*
+*_backup_*.py
+logs
+uploads
+training/learning_queue.jsonl

@@ -33,12 +33,12 @@ Esta etapa consolida las funciones ya creadas, actualiza la documentacion y deja
 1. Ordenar la documentacion para que coincida con las funciones reales.
 2. Separar backups historicos del codigo activo.
 3. Completar variables de entorno y guia de instalacion.
-4. Preparar autenticacion y autorizacion para rutas sensibles.
-5. Restringir CORS por ambiente.
+4. Ampliar autenticacion por API key hacia usuarios, login y roles.
+5. Restringir CORS por ambiente en cada despliegue.
 6. Unificar rutas antiguas y rutas nuevas bajo una estructura consistente.
 7. Cambiar mensajes `print` por `logging`.
 8. Crear flujo formal para aplicar migraciones SQL.
-9. Agregar Docker para desarrollo y despliegue.
+9. Fortalecer Docker para despliegues productivos.
 10. Preparar integracion con frontend.
 
 ## Criterios para considerar estable la V2
@@ -47,8 +47,10 @@ Esta etapa consolida las funciones ya creadas, actualiza la documentacion y deja
 - El endpoint raiz reporta version `2.0.0`.
 - La documentacion describe las capacidades actuales.
 - `.env.example` contiene las variables necesarias para ejecutar el proyecto.
+- Las rutas sensibles pueden protegerse con `X-API-Key`.
 - El README apunta a esta hoja de ruta.
 - Las migraciones SQL se pueden aplicar con `.\aplicar-migraciones.ps1`.
+- Docker permite levantar API y MySQL en desarrollo.
 - El perfil operativo de app e IA esta disponible en `/perfil`.
 - La descarga PDF esta disponible para tickets de venta y reporte de bajo stock.
 

@@ -1,0 +1,42 @@
+services:
+  api:
+    build: .
+    container_name: pharma-neural-api
+    depends_on:
+      - mysql
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: pharmacontrol
+      DB_USER: pharma
+      DB_PASSWORD: pharma_dev_password
+      DEBUG: "True"
+      ENVIRONMENT: development
+      CORS_ALLOW_ORIGINS: http://localhost:3000,http://localhost:5173
+      API_KEYS: dev-api-key
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  mysql:
+    image: mysql:8.4
+    container_name: pharma-neural-mysql
+    environment:
+      MYSQL_DATABASE: pharmacontrol
+      MYSQL_USER: pharma
+      MYSQL_PASSWORD: pharma_dev_password
+      MYSQL_ROOT_PASSWORD: root_dev_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mysql_data:
