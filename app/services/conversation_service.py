@@ -233,13 +233,23 @@ class ConversationService:
         self,
         value: dict[str, Any],
     ) -> str | None:
+        for key in ("entidades", "datos"):
+            nested_value = value.get(key)
+            medicine = self._extract_medicine(nested_value)
+
+            if medicine:
+                return medicine
+
         for key in self.MEDICINE_KEYS:
             candidate = value.get(key)
 
             if isinstance(candidate, str) and candidate.strip():
                 return candidate.strip()
 
-        for nested_value in value.values():
+        for nested_key, nested_value in value.items():
+            if nested_key in {"respuesta", "mensaje"}:
+                continue
+
             medicine = self._extract_medicine(nested_value)
 
             if medicine:
@@ -255,6 +265,14 @@ class ConversationService:
             r"(?:medicamento|producto|nombre)\s*[:\-]\s*"
             r"([A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9][A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .\-]{1,80})",
             r"(?:información|informacion|datos)\s+(?:de|del)\s+"
+            r"([A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9][A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .\-]{1,80})",
+            r"(?:stock|existencia|existencias|precio|caducidad|vence|"
+            r"lote|proveedor|categoria|categoría)\s+(?:de|del|tiene|"
+            r"para)?\s*"
+            r"([A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9][A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .\-]{1,80})",
+            r"(?:cuanto|cuánto|cuando|cuándo|cual|cuál|quien|quién)\s+"
+            r"(?:stock|precio|caduca|vence|lote|proveedor|categoria|"
+            r"categoría)\s+(?:tiene|de|del|es|para)?\s*"
             r"([A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9][A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .\-]{1,80})",
         )
 
@@ -394,11 +412,20 @@ class ConversationService:
         )
 
         effective_message = clean_message
+        explicit_medicine = self._extract_medicine_from_text(
+            clean_message
+        )
 
         if used_memory:
             effective_message = self._build_contextual_message(
                 original_message=clean_message,
                 medicine=previous_medicine,
+                follow_up_intent=follow_up_intent,
+            )
+        elif follow_up_intent and explicit_medicine:
+            effective_message = self._build_contextual_message(
+                original_message=clean_message,
+                medicine=explicit_medicine,
                 follow_up_intent=follow_up_intent,
             )
 

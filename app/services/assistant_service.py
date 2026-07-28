@@ -299,6 +299,42 @@ class AssistantService:
         ):
             return "resumen_inventario"
 
+        if (
+            any(
+                palabra in texto.split()
+                for palabra in [
+                    "stock",
+                    "existencia",
+                    "existencias",
+                    "precio",
+                    "caducidad",
+                    "caduca",
+                    "vence",
+                    "lote",
+                ]
+            )
+            and not any(
+                frase in texto
+                for frase in [
+                    "bajo stock",
+                    "stock bajo",
+                    "poco stock",
+                    "casi agotados",
+                ]
+            )
+            and any(
+                palabra in texto
+                for palabra in [
+                    "medicamento",
+                    "producto",
+                    "tiene",
+                    "del",
+                    "de ",
+                ]
+            )
+        ):
+            return "detalle_medicamento"
+
         if any(
             frase in texto
             for frase in [
@@ -483,6 +519,11 @@ class AssistantService:
 
         if intencion == "consultar_inventario":
             return self._consultar_inventario(
+                mensaje
+            )
+
+        if intencion == "detalle_medicamento":
+            return self._detalle_medicamento(
                 mensaje
             )
 
@@ -1004,6 +1045,94 @@ class AssistantService:
             },
         )
 
+    def _detalle_medicamento(
+        self,
+        mensaje,
+    ):
+        nombre = self._extraer_medicamento_detalle(mensaje)
+
+        if not nombre:
+            return self._respuesta(
+                respuesta=(
+                    "Indícame el nombre del medicamento. "
+                    "Ejemplo: cuánto stock tiene GENOPRAZOL."
+                ),
+                mensaje=mensaje,
+                intencion="detalle_medicamento",
+            )
+
+        medicamentos = inventory_service.buscar(nombre)
+
+        if not medicamentos:
+            return self._respuesta(
+                respuesta=(
+                    "No encontré medicamentos relacionados "
+                    f"con '{nombre}'."
+                ),
+                mensaje=mensaje,
+                intencion="detalle_medicamento",
+                confianza=1,
+                porcentaje=100,
+                datos=[],
+                entidades={
+                    "medicamento": nombre,
+                },
+            )
+
+        medicamento = medicamentos[0]
+        precio = float(medicamento.get("precio") or 0)
+        texto = (
+            f"{medicamento.get('nombre')} tiene "
+            f"{medicamento.get('stock', 0)} unidad(es) en stock. "
+            f"Stock mínimo: {medicamento.get('stock_minimo', 0)}. "
+            f"Lote: {medicamento.get('lote') or 'sin lote'}. "
+            f"Caducidad: {medicamento.get('caducidad') or 'sin fecha'}. "
+            f"Precio: ${precio:,.2f}."
+        )
+
+        return self._respuesta(
+            respuesta=texto,
+            mensaje=mensaje,
+            intencion="detalle_medicamento",
+            confianza=1,
+            porcentaje=100,
+            datos=[medicamento],
+            entidades={
+                "medicamento": nombre,
+            },
+        )
+
+    @classmethod
+    def _extraer_medicamento_detalle(cls, mensaje):
+        texto = cls._normalizar_texto(mensaje)
+
+        patrones = [
+            r".*\bmedicamento\s+",
+            r".*\bproducto\s+",
+            r".*\bstock\s+(?:tiene\s+)?",
+            r".*\bexistencias?\s+(?:tiene\s+)?",
+            r".*\bprecio\s+(?:tiene\s+|de\s+|del\s+)?",
+            r".*\bcaducidad\s+(?:de\s+|del\s+)?",
+            r".*\bcaduca\s+(?:el\s+|la\s+)?",
+            r".*\bvence\s+(?:el\s+|la\s+)?",
+            r".*\blote\s+(?:de\s+|del\s+)?",
+        ]
+
+        for patron in patrones:
+            nuevo = re.sub(
+                patron,
+                "",
+                texto,
+            )
+
+            if nuevo != texto:
+                texto = nuevo
+                break
+
+        texto = cls._limpiar_busqueda(texto)
+
+        return texto
+
     @classmethod
     def _extraer_categoria(cls, mensaje):
         texto = cls._normalizar_texto(mensaje)
@@ -1083,6 +1212,22 @@ class AssistantService:
             "una",
             "de",
             "del",
+            "dame",
+            "dime",
+            "quiero",
+            "necesito",
+            "consulta",
+            "consultar",
+            "busca",
+            "buscar",
+            "revisa",
+            "revisar",
+            "informacion",
+            "información",
+            "info",
+            "datos",
+            "dato",
+            "sobre",
             "medicamento",
             "medicamentos",
             "producto",
