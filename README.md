@@ -203,8 +203,36 @@ After starting the server:
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 - App/AI profile: `http://localhost:8000/perfil`
+- AI capabilities for the app: `http://localhost:8000/ia/capacidades`
 - Sale ticket PDF: `http://localhost:8000/ventas/{venta_id}/ticket.pdf`
 - Low stock PDF: `http://localhost:8000/inventario/alertas/reporte-bajo-stock.pdf`
+
+## AI In The App
+
+The mobile or web app can call `/ia/capacidades` to know what the AI can do,
+what is still pending and which actions are enabled for the current role.
+
+Recommended headers for app requests:
+
+```http
+X-API-Key: dev-api-key
+X-User-Id: 1
+X-User-Role: encargado
+```
+
+Current roles:
+
+- `admin`: full access.
+- `supervisor`: operational and review access.
+- `encargado`: inventory, reports and executable AI actions.
+- `vendedor`: read-only inventory and AI consultation.
+
+The app should use this endpoint to decide which buttons or screens to show:
+
+- Show chat, recommendations and predictions for users with `ai:read`.
+- Show purchase confirmation and autonomous execution only with `ai:execute`.
+- Show inventory movements only with `inventory:write`.
+- Show feedback review only with `learning:review`.
 
 ## Example Requests
 

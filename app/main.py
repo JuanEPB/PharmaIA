@@ -2,6 +2,7 @@
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.agent_routes import router as agent_router
+from app.api.ai_capability_routes import router as ai_capability_router
 from app.api.anomaly_routes import router as anomaly_router
 from app.api.conversation_routes import router as conversation_router
 from app.api.dashboard_routes import router as dashboard_router
@@ -91,6 +92,9 @@ app.include_router(voice_router)
 
 # Agente autónomo
 app.include_router(agent_router)
+
+# Capacidades IA para app
+app.include_router(ai_capability_router)
 
 # Predicción de agotamiento
 app.include_router(depletion_router)
