@@ -3,21 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pharma Neural - Login Pro</title>
+  <title>Pharma Neural - Login</title>
   <style>
     :root {
-      --bg: #f4f7f8;
-      --panel: #ffffff;
-      --ink: #172426;
-      --muted: #667779;
-      --line: #dbe5e7;
+      --page: #eef3f4;
+      --surface: #ffffff;
+      --ink: #102326;
+      --muted: #657477;
+      --line: #d7e2e4;
+      --soft: #edf7f5;
       --primary: #0f766e;
-      --primary-dark: #115e59;
-      --accent: #2563eb;
-      --danger: #b91c1c;
-      --soft: #e8f4f2;
-      --warning: #f59e0b;
-      --shadow: 0 24px 80px rgba(16, 36, 40, 0.14);
+      --primary-strong: #0b5f59;
+      --blue: #2563eb;
+      --amber: #d97706;
+      --shadow: 0 22px 70px rgba(14, 35, 38, 0.13);
     }
 
     * {
@@ -29,39 +28,51 @@
       min-height: 100vh;
       font-family: Inter, Segoe UI, Arial, sans-serif;
       color: var(--ink);
-      background:
-        linear-gradient(135deg, rgba(15, 118, 110, 0.08), transparent 36%),
-        linear-gradient(315deg, rgba(37, 99, 235, 0.08), transparent 34%),
-        var(--bg);
+      background: var(--page);
     }
 
-    .shell {
+    .page {
       min-height: 100vh;
       display: grid;
-      grid-template-columns: minmax(360px, 0.92fr) minmax(420px, 1.08fr);
+      place-items: center;
+      padding: 28px;
     }
 
-    .brand-panel {
-      position: relative;
-      padding: 48px;
+    .login-shell {
+      width: min(1120px, 100%);
+      min-height: 680px;
+      display: grid;
+      grid-template-columns: 1.03fr 0.97fr;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .product-side {
+      padding: 36px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      overflow: hidden;
       background:
-        linear-gradient(rgba(13, 54, 56, 0.74), rgba(13, 54, 56, 0.86)),
-        url("https://images.unsplash.com/photo-1585435557343-3b092031a831?auto=format&fit=crop&w=1200&q=80");
-      background-size: cover;
-      background-position: center;
-      color: white;
+        linear-gradient(135deg, rgba(15, 118, 110, 0.13), transparent 38%),
+        linear-gradient(315deg, rgba(37, 99, 235, 0.11), transparent 35%),
+        #f8fbfb;
+      border-right: 1px solid var(--line);
     }
 
-    .brand-mark {
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand-left {
       display: flex;
       align-items: center;
       gap: 12px;
-      font-weight: 800;
-      font-size: 18px;
     }
 
     .logo {
@@ -70,92 +81,178 @@
       border-radius: 8px;
       display: grid;
       place-items: center;
-      background: rgba(255, 255, 255, 0.16);
-      border: 1px solid rgba(255, 255, 255, 0.24);
+      color: white;
+      background: var(--primary);
       font-weight: 900;
     }
 
-    .brand-copy {
-      max-width: 560px;
-    }
-
-    .brand-copy h1 {
-      margin: 0 0 18px;
-      font-size: 48px;
-      line-height: 1.02;
-      letter-spacing: 0;
-    }
-
-    .brand-copy p {
-      margin: 0;
-      max-width: 500px;
-      color: rgba(255, 255, 255, 0.84);
-      font-size: 16px;
-      line-height: 1.7;
-    }
-
-    .status-row {
+    .brand-name {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-      max-width: 540px;
+      gap: 2px;
     }
 
-    .status-item {
-      padding: 14px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      backdrop-filter: blur(8px);
+    .brand-name strong {
+      font-size: 16px;
     }
 
-    .status-item strong {
-      display: block;
-      font-size: 19px;
-      margin-bottom: 4px;
-    }
-
-    .status-item span {
-      color: rgba(255, 255, 255, 0.74);
+    .brand-name span,
+    .pill {
+      color: var(--muted);
       font-size: 12px;
     }
 
-    .login-panel {
-      display: grid;
-      place-items: center;
-      padding: 42px;
-    }
-
-    .login-card {
-      width: min(100%, 460px);
-      background: var(--panel);
+    .pill {
+      padding: 8px 10px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      box-shadow: var(--shadow);
-      padding: 34px;
+      background: white;
+      font-weight: 700;
+    }
+
+    .headline {
+      max-width: 520px;
+      margin-top: 46px;
     }
 
     .eyebrow {
-      margin: 0 0 10px;
+      margin: 0 0 12px;
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 42px;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .headline p {
+      margin: 18px 0 0;
+      max-width: 470px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .dashboard-preview {
+      margin-top: 34px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .preview-top {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .metric,
+    .activity {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.82);
+      padding: 16px;
+    }
+
+    .metric span,
+    .activity span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .trend {
+      margin-top: 10px;
       color: var(--primary);
       font-size: 12px;
       font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0;
+    }
+
+    .activity {
+      display: grid;
+      gap: 12px;
+    }
+
+    .activity-row {
+      display: grid;
+      grid-template-columns: 10px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--primary);
+    }
+
+    .dot.blue {
+      background: var(--blue);
+    }
+
+    .dot.amber {
+      background: var(--amber);
+    }
+
+    .tag {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .roles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 22px;
+    }
+
+    .roles span {
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .form-side {
+      display: grid;
+      place-items: center;
+      padding: 42px;
+      background: white;
+    }
+
+    .login-card {
+      width: min(100%, 420px);
     }
 
     .login-card h2 {
       margin: 0;
-      font-size: 28px;
+      font-size: 30px;
       line-height: 1.2;
       letter-spacing: 0;
     }
 
-    .login-card .hint {
+    .hint {
       margin: 10px 0 28px;
       color: var(--muted);
-      line-height: 1.55;
       font-size: 14px;
+      line-height: 1.55;
     }
 
     .field {
@@ -166,29 +263,31 @@
       display: block;
       margin-bottom: 7px;
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
     }
 
     .input-wrap {
-      display: flex;
+      height: 50px;
+      display: grid;
+      grid-template-columns: 44px 1fr;
       align-items: center;
-      height: 48px;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: #fbfdfd;
-      transition: border-color 0.16s, box-shadow 0.16s;
+      transition: border-color 0.16s, box-shadow 0.16s, background 0.16s;
     }
 
     .input-wrap:focus-within {
       border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.11);
     }
 
-    .input-wrap span {
-      width: 46px;
-      text-align: center;
+    .input-icon {
       color: var(--muted);
-      font-weight: 700;
+      text-align: center;
+      font-weight: 900;
+      font-size: 13px;
     }
 
     input {
@@ -206,8 +305,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
-      margin: 6px 0 22px;
+      gap: 12px;
+      margin: 4px 0 22px;
       font-size: 13px;
     }
 
@@ -221,12 +320,13 @@
     .check input {
       width: 16px;
       height: 16px;
+      accent-color: var(--primary);
     }
 
     a {
-      color: var(--primary-dark);
+      color: var(--primary-strong);
       text-decoration: none;
-      font-weight: 700;
+      font-weight: 800;
     }
 
     button {
@@ -237,152 +337,199 @@
       background: var(--primary);
       color: white;
       font-size: 15px;
-      font-weight: 800;
+      font-weight: 900;
       cursor: pointer;
-      box-shadow: 0 12px 28px rgba(15, 118, 110, 0.24);
+      box-shadow: 0 12px 28px rgba(15, 118, 110, 0.23);
     }
 
     button:hover {
-      background: var(--primary-dark);
+      background: var(--primary-strong);
     }
 
-    .security {
-      margin-top: 22px;
-      padding: 14px;
-      border-radius: 8px;
+    .divider {
+      margin: 24px 0;
       display: grid;
-      grid-template-columns: 36px 1fr;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
       gap: 12px;
-      background: var(--soft);
-      color: #164e49;
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    .security-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      display: grid;
-      place-items: center;
-      background: white;
-      color: var(--primary);
-      font-weight: 900;
-    }
-
-    .footer-note {
-      margin-top: 18px;
       color: var(--muted);
-      text-align: center;
       font-size: 12px;
     }
 
-    @media (max-width: 860px) {
-      .shell {
+    .divider::before,
+    .divider::after {
+      content: "";
+      height: 1px;
+      background: var(--line);
+    }
+
+    .role-note {
+      padding: 14px;
+      border: 1px solid #cde5e1;
+      border-radius: 8px;
+      background: var(--soft);
+      color: #164e49;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .role-note strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .footer {
+      margin-top: 22px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 920px) {
+      .page {
+        padding: 0;
+      }
+
+      .login-shell {
+        min-height: 100vh;
+        grid-template-columns: 1fr;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .product-side {
+        padding: 24px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      h1 {
+        font-size: 32px;
+      }
+
+      .preview-top {
         grid-template-columns: 1fr;
       }
 
-      .brand-panel {
-        min-height: 360px;
-        padding: 28px;
-      }
-
-      .brand-copy h1 {
-        font-size: 34px;
-      }
-
-      .status-row {
-        grid-template-columns: 1fr;
-      }
-
-      .login-panel {
-        padding: 24px;
-      }
-
-      .login-card {
-        padding: 24px;
+      .form-side {
+        padding: 28px 22px;
       }
     }
   </style>
 </head>
 <body>
-  <main class="shell">
-    <section class="brand-panel" aria-label="Resumen de Pharma Neural">
-      <div class="brand-mark">
-        <div class="logo">PN</div>
-        <span>Pharma Neural</span>
-      </div>
+  <main class="page">
+    <section class="login-shell">
+      <aside class="product-side" aria-label="Resumen de Pharma Neural">
+        <div>
+          <div class="brand">
+            <div class="brand-left">
+              <div class="logo">PN</div>
+              <div class="brand-name">
+                <strong>Pharma Neural</strong>
+                <span>Assistant V2</span>
+              </div>
+            </div>
+            <div class="pill">Panel seguro</div>
+          </div>
 
-      <div class="brand-copy">
-        <p class="eyebrow">Inventario inteligente</p>
-        <h1>Control farmaceutico con IA operativa</h1>
-        <p>
-          Consulta inventario, riesgos de agotamiento, caducidades y compras
-          sugeridas desde una experiencia segura para cada rol de la app.
-        </p>
-      </div>
+          <div class="headline">
+            <p class="eyebrow">Inventario con IA</p>
+            <h1>Acceso operativo para farmacia inteligente</h1>
+            <p>
+              Entra para revisar inventario, ventas, alertas, reportes y
+              recomendaciones de IA con permisos segun tu rol.
+            </p>
+          </div>
 
-      <div class="status-row" aria-label="Indicadores principales">
-        <div class="status-item">
-          <strong>IA</strong>
-          <span>Recomendaciones activas</span>
-        </div>
-        <div class="status-item">
-          <strong>24/7</strong>
-          <span>Alertas de inventario</span>
-        </div>
-        <div class="status-item">
-          <strong>Roles</strong>
-          <span>Acceso controlado</span>
-        </div>
-      </div>
-    </section>
+          <div class="dashboard-preview" aria-label="Vista previa del panel">
+            <div class="preview-top">
+              <div class="metric">
+                <span>Riesgo de inventario</span>
+                <strong>12</strong>
+                <div class="trend">3 criticos requieren revision</div>
+              </div>
+              <div class="metric">
+                <span>Compras sugeridas</span>
+                <strong>$8.4k</strong>
+                <div class="trend">Ordenes en borrador</div>
+              </div>
+            </div>
 
-    <section class="login-panel" aria-label="Inicio de sesion">
-      <form class="login-card">
-        <p class="eyebrow">Acceso seguro</p>
-        <h2>Inicia sesion</h2>
-        <p class="hint">
-          Entra al panel operativo para revisar inventario, ventas, reportes y
-          acciones sugeridas por la IA.
-        </p>
-
-        <div class="field">
-          <label for="email">Correo o usuario</label>
-          <div class="input-wrap">
-            <span>@</span>
-            <input id="email" type="email" placeholder="usuario@farmacia.com">
+            <div class="activity">
+              <span>Prioridades de hoy</span>
+              <div class="activity-row">
+                <i class="dot"></i>
+                <div>Paracetamol bajo minimo</div>
+                <div class="tag">ALTA</div>
+              </div>
+              <div class="activity-row">
+                <i class="dot amber"></i>
+                <div>Medicamentos por caducar</div>
+                <div class="tag">MEDIA</div>
+              </div>
+              <div class="activity-row">
+                <i class="dot blue"></i>
+                <div>Reporte ejecutivo disponible</div>
+                <div class="tag">IA</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="field">
-          <label for="password">Contrasena</label>
-          <div class="input-wrap">
-            <span>*</span>
-            <input id="password" type="password" placeholder="Ingresa tu contrasena">
+        <div class="roles" aria-label="Roles disponibles">
+          <span>Admin</span>
+          <span>Supervisor</span>
+          <span>Encargado</span>
+          <span>Vendedor</span>
+        </div>
+      </aside>
+
+      <section class="form-side" aria-label="Inicio de sesion">
+        <form class="login-card">
+          <p class="eyebrow">Bienvenido</p>
+          <h2>Inicia sesion</h2>
+          <p class="hint">
+            Usa tu cuenta de farmacia para continuar al panel de control.
+          </p>
+
+          <div class="field">
+            <label for="email">Correo o usuario</label>
+            <div class="input-wrap">
+              <span class="input-icon">@</span>
+              <input id="email" type="email" placeholder="usuario@farmacia.com">
+            </div>
           </div>
-        </div>
 
-        <div class="options">
-          <label class="check">
-            <input type="checkbox">
-            Recordar equipo
-          </label>
-          <a href="#">Recuperar acceso</a>
-        </div>
-
-        <button type="submit">Entrar al sistema</button>
-
-        <div class="security">
-          <div class="security-icon">✓</div>
-          <div>
-            Tu rol define que puede ejecutar la IA: consulta, movimientos,
-            compras, reportes o revision de aprendizaje.
+          <div class="field">
+            <label for="password">Contrasena</label>
+            <div class="input-wrap">
+              <span class="input-icon">***</span>
+              <input id="password" type="password" placeholder="Ingresa tu contrasena">
+            </div>
           </div>
-        </div>
 
-        <p class="footer-note">Pharma Neural Assistant V2</p>
-      </form>
+          <div class="options">
+            <label class="check">
+              <input type="checkbox">
+              Recordar equipo
+            </label>
+            <a href="#">Recuperar acceso</a>
+          </div>
+
+          <button type="submit">Entrar al sistema</button>
+
+          <div class="divider">seguridad</div>
+
+          <div class="role-note">
+            <strong>Permisos por rol</strong>
+            La IA solo ejecuta movimientos, compras o revisiones cuando el rol
+            del usuario lo permite.
+          </div>
+
+          <p class="footer">API protegida con X-API-Key y rol de usuario</p>
+        </form>
+      </section>
     </section>
   </main>
 </body>
