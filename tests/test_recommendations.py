@@ -55,6 +55,9 @@ def test_recommendations_prioritize_critical_items() -> None:
 
     assert result["total"] >= 4
     assert result["recomendaciones"][0]["prioridad"] == "CRITICA"
+    assert result["recomendaciones"][0]["explicacion_app"]
+    assert result["recomendaciones"][0]["accion_app"]
+    assert result["recomendaciones"][0]["bloquea_acciones"] is True
     assert result["fuentes"]["anomalias"] == 1
     assert result["fuentes"]["plan_compra"] is True
 
@@ -96,3 +99,6 @@ def test_recommendations_fallback_to_monitoring() -> None:
 
     assert result["total"] == 1
     assert result["recomendaciones"][0]["tipo"] == "MONITOREO"
+    assert result["recomendaciones"][0]["accion_app"] == (
+        "Ver resumen de inventario"
+    )

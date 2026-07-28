@@ -48,6 +48,18 @@ class RecommendationService:
             "BAJA": 20,
         }.get(priority, 10)
 
+    @staticmethod
+    def _app_fields(
+        explanation: str,
+        action: str,
+        blocks_actions: bool = False,
+    ) -> dict[str, Any]:
+        return {
+            "explicacion_app": explanation,
+            "accion_app": action,
+            "bloquea_acciones": blocks_actions,
+        }
+
     def generar_recomendaciones(
         self,
         limite: int = 10,
@@ -76,12 +88,20 @@ class RecommendationService:
                     "prioridad": "CRITICA",
                     "tipo": "ANOMALIA",
                     "accion": (
-                        "Revisar anomalías críticas antes de "
+                        "Revisar anomalias criticas antes de "
                         "confirmar compras o ajustes nuevos."
                     ),
                     "impacto": (
                         "Puede existir error operativo o stock "
                         "inconsistente."
+                    ),
+                    **self._app_fields(
+                        explanation=(
+                            "La IA encontro valores fuera de lo normal. "
+                            "Revisa antes de autorizar compras o ajustes."
+                        ),
+                        action="Abrir revision de anomalias",
+                        blocks_actions=True,
                     ),
                     "total": anomalies.get("anomalias_criticas"),
                 }
@@ -97,6 +117,14 @@ class RecommendationService:
                         "disponible y registrar baja por caducidad."
                     ),
                     "impacto": "Reduce riesgo sanitario y operativo.",
+                    **self._app_fields(
+                        explanation=(
+                            "Hay medicamentos vencidos. No deben "
+                            "venderse ni contarse como stock disponible."
+                        ),
+                        action="Ver medicamentos caducados",
+                        blocks_actions=True,
+                    ),
                     "total": summary.get("caducados"),
                 }
             )
@@ -107,12 +135,20 @@ class RecommendationService:
                     "prioridad": "ALTA",
                     "tipo": "COMPRA",
                     "accion": (
-                        "Generar órdenes de compra en borrador para "
-                        "medicamentos bajo mínimo."
+                        "Generar ordenes de compra en borrador para "
+                        "medicamentos bajo minimo."
                     ),
                     "impacto": (
                         "Disminuye riesgo de agotamiento en productos "
-                        "críticos."
+                        "criticos."
+                    ),
+                    **self._app_fields(
+                        explanation=(
+                            "La IA comparo stock actual contra stock "
+                            "minimo y detecto productos que necesitan "
+                            "reposicion."
+                        ),
+                        action="Revisar plan de compra",
                     ),
                     "total": purchase_plan.get("total_medicamentos"),
                     "costo_estimado": purchase_plan.get(
@@ -140,7 +176,14 @@ class RecommendationService:
                         "medicamento con riesgo de agotamiento."
                     ),
                     "impacto": (
-                        "Evita ruptura de stock en operación diaria."
+                        "Evita ruptura de stock en operacion diaria."
+                    ),
+                    **self._app_fields(
+                        explanation=(
+                            "El stock disponible puede no alcanzar para "
+                            "la demanda estimada. Prioriza su reposicion."
+                        ),
+                        action="Ver prediccion de agotamiento",
                     ),
                     "medicamento": medicine.get("nombre"),
                     "nivel_riesgo": prediction.get("nivel_riesgo"),
@@ -164,7 +207,14 @@ class RecommendationService:
                     ),
                     "impacto": (
                         "Mejora la respuesta ante bajo stock y "
-                        "caducidades próximas."
+                        "caducidades proximas."
+                    ),
+                    **self._app_fields(
+                        explanation=(
+                            "Hay alertas activas que requieren revision "
+                            "operativa desde la app."
+                        ),
+                        action="Abrir alertas de inventario",
                     ),
                     "total": len(alerts),
                 }
@@ -176,10 +226,17 @@ class RecommendationService:
                     "prioridad": "BAJA",
                     "tipo": "MONITOREO",
                     "accion": (
-                        "Mantener revisión periódica del inventario."
+                        "Mantener revision periodica del inventario."
                     ),
                     "impacto": (
                         "El inventario no muestra riesgos relevantes."
+                    ),
+                    **self._app_fields(
+                        explanation=(
+                            "La IA no encontro riesgos importantes con "
+                            "los datos actuales."
+                        ),
+                        action="Ver resumen de inventario",
                     ),
                 }
             )
