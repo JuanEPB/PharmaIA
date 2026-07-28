@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.agent_routes import router as agent_router
 from app.api.ai_capability_routes import router as ai_capability_router
 from app.api.anomaly_routes import router as anomaly_router
+from app.api.auth_routes import router as auth_router
 from app.api.conversation_routes import router as conversation_router
 from app.api.dashboard_routes import router as dashboard_router
 from app.api.depletion_routes import router as depletion_router
@@ -42,6 +43,9 @@ app.add_middleware(
 app.add_middleware(ApiKeyAuthMiddleware)
 
 app.include_router(assistant_router)
+
+# Autenticacion de usuarios
+app.include_router(auth_router)
 
 
 @app.get("/")

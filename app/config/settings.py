@@ -71,6 +71,7 @@ class Settings:
 
     PUBLIC_PATHS = {
         "/",
+        "/auth/login",
         "/health",
         "/docs",
         "/redoc",
