@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
+from app.core.permissions import AuthenticatedUser, require_permission
 from app.services.autonomous_agent_service import (
     autonomous_agent_service,
 )
@@ -38,13 +39,30 @@ class AutonomousCycleRequest(BaseModel):
 )
 async def run_autonomous_cycle(
     request: AutonomousCycleRequest,
+    current_user: AuthenticatedUser = Depends(
+        require_permission("ai:read")
+    ),
 ) -> dict[str, Any]:
     try:
+        if request.autorizar_acciones and not current_user.can(
+            "ai:execute"
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=(
+                    "El usuario no puede autorizar acciones "
+                    "automaticas de IA."
+                ),
+            )
+
         return autonomous_agent_service.planificar_ciclo(
             autorizar_acciones=request.autorizar_acciones,
-            usuario_id=request.usuario_id,
+            usuario_id=request.usuario_id or current_user.user_id,
             sesion_id=request.sesion_id,
         )
+
+    except HTTPException:
+        raise
 
     except Exception as exc:
         raise HTTPException(

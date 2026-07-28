@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, Field
 
+from app.core.permissions import AuthenticatedUser, require_permission
 from app.services.app_sales_sync_service import app_sales_sync_service
 from app.services.pdf_export_service import pdf_export_service
 
@@ -59,7 +60,12 @@ async def list_synced_app_sales(limite: int = 20) -> dict:
     "/{venta_id}/ticket.pdf",
     summary="Descargar ticket de venta en PDF",
 )
-async def download_sale_ticket_pdf(venta_id: int) -> Response:
+async def download_sale_ticket_pdf(
+    venta_id: int,
+    current_user: AuthenticatedUser = Depends(
+        require_permission("reports:export")
+    ),
+) -> Response:
     try:
         pdf = pdf_export_service.generar_ticket_venta_pdf(venta_id)
         return Response(

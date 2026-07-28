@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
+from app.core.permissions import AuthenticatedUser, require_permission
 from app.services.learning_feedback_service import (
     learning_feedback_service,
 )
@@ -69,6 +70,9 @@ async def register_learning_feedback(
 async def list_learning_events(
     estado: str | None = None,
     limite: int = 100,
+    current_user: AuthenticatedUser = Depends(
+        require_permission("learning:review")
+    ),
 ) -> dict[str, Any]:
     events = learning_feedback_service.list_events(
         status=estado,
@@ -88,6 +92,9 @@ async def list_learning_events(
 async def review_learning_event(
     event_id: str,
     request: LearningReviewRequest,
+    current_user: AuthenticatedUser = Depends(
+        require_permission("learning:review")
+    ),
 ) -> dict[str, Any]:
     try:
         event = learning_feedback_service.update_event_status(

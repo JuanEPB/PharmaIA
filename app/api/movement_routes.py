@@ -2,8 +2,9 @@
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from app.core.permissions import AuthenticatedUser, require_permission
 from app.schemas import InventoryMovementRequest
 from app.services.inventory_movement_service import (
     VALID_MOVEMENT_TYPES,
@@ -17,14 +18,19 @@ router = APIRouter(
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
-async def create_inventory_movement(request: InventoryMovementRequest) -> dict[str, Any]:
+async def create_inventory_movement(
+    request: InventoryMovementRequest,
+    current_user: AuthenticatedUser = Depends(
+        require_permission("inventory:write")
+    ),
+) -> dict[str, Any]:
     try:
         return inventory_movement_service.registrar_movimiento(
             medicamento_id=request.medicamento_id,
             tipo=request.tipo,
             cantidad=request.cantidad,
             motivo=request.motivo,
-            usuario_id=request.usuario_id,
+            usuario_id=request.usuario_id or current_user.user_id,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
